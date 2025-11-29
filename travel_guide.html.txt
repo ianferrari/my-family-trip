@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>親子智慧導遊 (全球版)</title>
+    <style>
+        /* --- 基礎設定 --- */
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* --- 頂部導航列 --- */
+        header {
+            background-color: #00bcd4; /* 充滿活力的藍色 */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { margin: 0; font-size: 1.2rem; }
+        header p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+        /* --- 控制區 --- */
+        .controls {
+            padding: 15px;
+            text-align: center;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+        
+        button#find-btn {
+            background-color: #ff9800; /* 顯眼的橘色 */
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        button#find-btn:active { transform: scale(0.95); }
+        button#find-btn:disabled { background-color: #ccc; }
+
+        #status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* --- 地圖區塊 --- */
+        #map {
+            width: 100%;
+            height: 30vh; /* 地圖佔畫面的 30% */
+            background-color: #e0e0e0;
+        }
+
+        /* --- 景點列表區 --- */
+        .results-container {
+            padding: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .place-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .place-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .place-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .place-rating {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .place-info {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .open-now { color: #28a745; font-weight: bold; }
+        .closed-now { color: #dc3545; font-weight: bold; }
+
+        /* --- 爸媽專屬資訊區 (模擬 AI 分析) --- */
+        .parent-tips {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .parent-tips strong { display: block; margin-bottom: 3px; color: #1565c0; }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .tag {
+            background: #f0f0f0;
+            color: #666;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🌍 爸媽的旅遊神隊友</h1>
+    <p>不管在台灣還是世界各地，一鍵找好玩！</p>
+</header>
+
+<div class="controls">
+    <button id="find-btn" onclick="startExplore()">📍 搜尋附近熱門景點</button>
+    <div id="status">準備就緒</div>
+</div>
+
+<div id="map"></div>
+
+<div class="results-container" id="results">
+    <p style="text-align:center; color:#999; margin-top:30px;">
+        點擊上方按鈕開始探索...
+    </p>
+</div>
+
+<script>
+    let map;
+    let service;
+    let infowindow;
+    let userLocation = null;
+
+    // 1. 初始化地圖 (預設先不顯示詳細位置)
+    function initMap() {
+        // 預設位置先定在台灣中心，或任何地方
+        const defaultLoc = { lat: 23.973875, lng: 120.982024 };
+        
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: defaultLoc,
+            zoom: 7, // 顯示整個台灣
+            disableDefaultUI: true // 簡化介面
+        });
+
+        infowindow = new google.maps.InfoWindow();
+    }
+
+    // 2. 開始探索按鈕觸發
+    function startExplore() {
+        const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('find-btn');
+        
+        statusDiv.innerHTML = "📡 正在定位中，請稍候...";
+        btn.disabled = true;
+
+        // 使用瀏覽器定位
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+
+                    statusDiv.innerHTML = "✅ 定位成功！正在搜尋附近好玩的地方...";
+                    
+                    // 地圖移動到該位置
+                    map.setCenter(userLocation);
+                    map.setZoom(15);
+                    
+                    // 在地圖上標記「我在這」
+                    new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: "你的位置",
+                        icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                    });
+
+                    // 執行搜尋
+                    searchNearbyPlaces(userLocation);
+                    btn.disabled = false;
+                },
+                () => {
+                    handleLocationError(true, statusDiv);
+                    btn.disabled = false;
+                }
+            );
+        } else {
+            // 瀏覽器不支援
+            handleLocationError(false, statusDiv);
+            btn.disabled = false;
+        }
+    }
+
+    function handleLocationError(browserHasGeolocation, statusDiv) {
+        statusDiv.innerHTML = browserHasGeolocation
+            ? "❌ 無法取得位置，請確認瀏覽器權限或是你的GPS已開啟。"
+            : "❌ 你的瀏覽器不支援定位功能。";
+    }
+
+    // 3. 搜尋附近景點
+    function searchNearbyPlaces(location) {
+        service = new google.maps.places.PlacesService(map);
+        
+        const request = {
+            location: location,
+            radius: '1500', // 搜尋半徑 1.5 公里
+            type: ['tourist_attraction'], // 主要搜尋景點
+            // 你也可以加上 'park', 'museum', 'aquarium' 等
+        };
+
+        service.nearbySearch(request, (results, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                displayResults(results);
+            } else {
+                document.getElementById('status').innerHTML = "⚠️ 附近好像沒什麼熱門景點...";
+            }
+        });
+    }
+
+    // 4. 顯示結果並進行「爸媽視角分析」
+    function displayResults(places) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = ""; // 清空舊資料
+        document.getElementById('status').innerHTML = `🎉 找到 ${places.length} 個好去處！`;
+
+        places.forEach(place => {
+            // 取得照片
+            const photoUrl = place.photos 
+                ? place.photos[0].getUrl({ maxWidth: 400 }) 
+                : null; // 之後可以加上預設圖
+
+            // 判斷營業狀態
+            const isOpen = place.opening_hours 
+                ? (place.opening_hours.open_now ? "<span class='open-now'>🟢 營業中</span>" : "<span class='closed-now'>🔴 休息中</span>") 
+                : "<span style='color:#999'>營業時間未知</span>";
+
+            // --- 🤖 模擬 AI 導遊分析 ---
+            // 由於 API 不會直接回傳 "好不好停車"，我們用類型來推斷建議
+            let parentAdvice = analyzeForParents(place.types, place.rating);
+
+            // 建立卡片 HTML
+            const card = document.createElement('div');
+            card.className = 'place-card';
+            card.innerHTML = `
+                <div class="place-header">
+                    <h3 class="place-name">${place.name}</h3>
+                    ${place.rating ? `<div class="place-rating">★ ${place.rating}</div>` : ''}
+                </div>
+                
+                <div class="place-info">
+                    ${isOpen} • ${place.vicinity}
+                </div>
+
+                <div class="parent-tips">
+                    <strong>👶 爸媽筆記：</strong>
+                    ${parentAdvice}
+                </div>
+
+                <div class="tags">
+                    ${place.types.slice(0, 3).map(type => `<span class="tag">${formatType(type)}</span>`).join('')}
+                </div>
+            `;
+            
+            // 點擊卡片可以在 Google Map 開啟導航
+            card.onclick = () => {
+                window.open(`https://www.google.com/maps/search/?api=1&query=${place.name}&query_place_id=${place.place_id}`, '_blank');
+            };
+
+            resultsDiv.appendChild(card);
+
+            // 在地圖上加標記
+            new google.maps.Marker({
+                position: place.geometry.location,
+                map: map,
+                title: place.name
+            });
+        });
+    }
+
+    // --- 輔助函式：針對爸媽的簡易邏輯分析 ---
+    function analyzeForParents(types, rating) {
+        let advice = "這是一個熱門地點，建議先查看詳細評論。";
+        
+        if (types.includes('park') || types.includes('amusement_park')) {
+            advice = "🔋 **超級放電區！** 戶外空間大，記得帶防蚊液和水壺。通常這類地點旁邊會有路邊停車格。";
+        } else if (types.includes('museum') || types.includes('art_gallery')) {
+            advice = "🤫 **室內行程**，適合雨天備案。請注意館內是否能推嬰兒車，建議帶安撫玩具。";
+        } else if (types.includes('zoo') || types.includes('aquarium')) {
+            advice = "🦄 **小孩最愛！** 絕對適合全家出遊，建議預留 2-3 小時停留時間。";
+        } else if (types.includes('shopping_mall') || types.includes('department_store')) {
+            advice = "🚗 **停車方便**，通常設有哺乳室與尿布台，是爸媽補給的好地方。";
+        } else if (rating && rating > 4.5) {
+            advice = "🌟 **高評價景點**，人潮可能較多，建議避開尖峰時段以免小孩躁動。";
+        }
+
+        return advice;
+    }
+
+    // 翻譯類別名稱 (讓介面變中文)
+    function formatType(type) {
+        const dict = {
+            'point_of_interest': '景點',
+            'establishment': '場所',
+            'park': '公園',
+            'tourist_attraction': '觀光名勝',
+            'museum': '博物館',
+            'restaurant': '餐廳',
+            'food': '美食',
+            'store': '商店',
+            'place_of_worship': '宗教場所'
+        };
+        return dict[type] || type; // 如果沒翻譯到就顯示原文
+    }
+
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&libraries=places&callback=initMap" async defer></script>
+
+</body>
+</html>
