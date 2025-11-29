@@ -51,7 +51,7 @@
 
 <header>
     <h1>Travel OS</h1>
-    <p>Saturday, Nov 29 • Family Trip</p>
+    <p>Family Trip • Explorer</p>
 </header>
 
 <div class="controls-container">
@@ -74,7 +74,7 @@
 
 <div id="debug-info"></div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&loading=async&libraries=places,maps"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
 
 <script>
     let map;
@@ -82,15 +82,9 @@
     let currentMarkers = []; 
     let currentMode = null; 
 
-    // 更新日期
-    const date = new Date();
-    const options = { weekday: 'short', month: 'short', day: 'numeric' };
-    document.querySelector('header p').textContent = date.toLocaleDateString('en-US', options) + " • Family Trip";
-
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
-        
         if (!map) {
             map = new Map(document.getElementById("map"), {
                 center: center, zoom: 15, mapId: "DEMO_MAP_ID", disableDefaultUI: true, gestureHandling: "greedy"
@@ -98,7 +92,6 @@
         } else {
             map.setCenter(center); map.setZoom(15);
         }
-
         new google.maps.Marker({
             position: center, map: map,
             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#007AFF", fillOpacity: 1, strokeWeight: 4, strokeColor: "white" },
@@ -115,19 +108,14 @@
         currentMode = mode;
         const btnFun = document.getElementById('btn-fun');
         const btnFood = document.getElementById('btn-food');
-        document.getElementById('debug-info').innerText = ""; // 清空錯誤訊息
-
-        // 1. 強制清空 (解決鬼打牆)
+        document.getElementById('debug-info').innerText = ""; 
         document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
         clearMarkers();
 
-        // 2. 切換樣式
         if (mode === 'fun') {
-            btnFun.classList.add('active-fun');
-            btnFood.className = ''; 
+            btnFun.classList.add('active-fun'); btnFood.className = ''; 
         } else {
-            btnFood.classList.add('active-food');
-            btnFun.className = '';
+            btnFood.classList.add('active-food'); btnFun.className = '';
         }
         startExplore();
     }
@@ -156,12 +144,16 @@
         } else { statusDiv.innerHTML = "❌ No GPS Support"; }
     }
 
+    // 🎡 找好玩 (已修正格式)
     async function searchFunPlaces(location) {
         try {
             const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
+            // 修正：locationRestriction 必須包含 circle
             const request = {
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                locationRestriction: { center: location, radius: 1500 },
+                locationRestriction: { 
+                    circle: { center: location, radius: 1500 } 
+                },
                 includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
                 maxResultCount: 10,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
@@ -170,43 +162,46 @@
             const { places } = await Place.searchNearby(request);
             displayResults(places, 'fun');
         } catch (e) {
-            document.getElementById('debug-info').innerText = "景點搜尋錯誤: " + e.message;
+            console.error(e);
+            document.getElementById('debug-info').innerText = "Fun Error: " + e.message;
         }
     }
 
-    // 🛡️ 雙重保險搜尋：先找親子 -> 失敗則找一般
+    // 🐶 找美食 (已修正格式)
     async function searchFoodWithFallback(location) {
         const { Place } = await google.maps.importLibrary("places");
         
-        // 嘗試 1: 親子 + 寵物搜尋
+        // 嘗試 1: 親子搜尋 (移除 openNow 避免報錯)
         try {
             const request = {
-                textQuery: "親子餐廳 OR 寵物友善餐廳", 
+                textQuery: "親子餐廳 寵物友善", 
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                locationBias: { center: location, radius: 1000 },
+                locationBias: { 
+                    circle: { center: location, radius: 1000 } 
+                },
                 maxResultCount: 15,
-                openNow: false, // 暫時關閉 openNow 以避免過濾太多結果
                 language: 'zh-TW',
             };
             const { places } = await Place.searchByText(request);
-            
             if (places && places.length > 0) {
                 displayResults(places, 'food');
-                return; // 成功就結束
+                return; 
             }
         } catch(e) {
-            console.warn("親子搜尋失敗，切換備案", e);
-            document.getElementById('debug-info').innerText = "自動切換一般模式 (Error: " + e.message + ")";
+            console.warn("Text search failed, switching to fallback", e);
         }
 
-        // 嘗試 2 (備案): 一般餐廳搜尋 (使用 Nearby Search，這跟找景點用一樣的技術，最穩定)
+        // 嘗試 2: 備案 (使用標準 Nearby Search)
         try {
             document.getElementById('status').innerHTML = "切換一般搜尋...";
             const { SearchNearbyRankPreference } = await google.maps.importLibrary("places");
+            // 修正：locationRestriction 格式
             const fallbackRequest = {
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                locationRestriction: { center: location, radius: 1000 },
-                includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], // 找一般餐廳
+                locationRestriction: { 
+                    circle: { center: location, radius: 1000 } 
+                },
+                includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], 
                 maxResultCount: 15,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
                 language: 'zh-TW',
@@ -214,8 +209,8 @@
             const { places } = await Place.searchNearby(fallbackRequest);
             displayResults(places, 'food_fallback');
         } catch(e) {
-            document.getElementById('results').innerHTML = '<div class="empty-state"><p>完全找不到餐廳😭</p></div>';
-            document.getElementById('debug-info').innerText += " | 備案也失敗: " + e.message;
+            document.getElementById('results').innerHTML = '<div class="empty-state"><p>找不到餐廳，請稍後再試</p></div>';
+            document.getElementById('debug-info').innerText = "Fallback Error: " + e.message;
         }
     }
 
@@ -261,19 +256,16 @@
             };
             resultsDiv.appendChild(card);
             
-            const marker = new google.maps.Marker({
+            new google.maps.Marker({
                 position: place.location, map: map, title: name,
             });
-            currentMarkers.push(marker);
         });
     }
 
     function analyzeForParents(types, rating, mode) {
         let advice = "";
         if (mode.includes('food')) {
-            if (mode === 'food') advice = "符合親子/寵物友善搜尋結果。";
-            else advice = "附近熱門餐廳 (一般模式)。";
-            
+            advice = mode === 'food' ? "符合親子/寵物友善搜尋結果。" : "附近熱門餐廳 (一般模式)。";
             if (rating > 4.5) advice += " 人氣高建議訂位。";
             if (types.includes('cafe')) advice = "適合休息喝咖啡。";
         } else {
