@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Travel OS</title>
     <style>
-        /* --- iOS 核心風格設定 --- */
         :root {
             --ios-bg: #F2F2F7;
             --ios-card: #FFFFFF;
@@ -17,188 +16,35 @@
             --glass-material: rgba(255, 255, 255, 0.85);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            background-color: var(--ios-bg);
-            margin: 0;
-            padding: 0;
-            color: #1C1C1E;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* --- 頂部導航列 --- */
-        header {
-            background: var(--glass-material);
-            backdrop-filter: saturate(180%) blur(20px);
-            -webkit-backdrop-filter: saturate(180%) blur(20px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            padding: 12px 20px;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        header p {
-            margin: 4px 0 0;
-            font-size: 13px;
-            color: var(--ios-gray-text);
-            font-weight: 500;
-        }
-
-        /* --- 控制區塊 --- */
-        .controls-container {
-            padding: 16px 20px;
-            background: var(--ios-bg);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            background: rgba(118, 118, 128, 0.12);
-            padding: 4px;
-            border-radius: 14px;
-        }
-        
-        button {
-            flex: 1;
-            border: none;
-            padding: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: transparent;
-            color: var(--ios-gray-text);
-        }
-
-        button.active-fun {
-            background: var(--ios-card);
-            color: var(--ios-orange);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-        }
-        
-        button.active-food {
-            background: var(--ios-card);
-            color: var(--ios-red);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; background-color: var(--ios-bg); margin: 0; padding: 0; color: #1C1C1E; -webkit-tap-highlight-color: transparent; }
+        header { background: var(--glass-material); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(0,0,0,0.1); padding: 12px 20px; }
+        header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        header p { margin: 4px 0 0; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; }
+        .controls-container { padding: 16px 20px; background: var(--ios-bg); }
+        .btn-group { display: flex; gap: 12px; background: rgba(118, 118, 128, 0.12); padding: 4px; border-radius: 14px; }
+        button { flex: 1; border: none; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--ios-gray-text); }
+        button.active-fun { background: var(--ios-card); color: var(--ios-orange); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
+        button.active-food { background: var(--ios-card); color: var(--ios-red); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
         button:active { transform: scale(0.96); }
-
-        #status {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 13px;
-            color: var(--ios-gray-text);
-            font-weight: 500;
-            min-height: 20px;
-        }
-
-        /* --- 地圖 Widget --- */
-        .map-wrapper {
-            padding: 0 20px;
-            margin-bottom: 20px;
-        }
-        #map {
-            width: 100%;
-            height: 35vh;
-            border-radius: 24px;
-            box-shadow: var(--shadow-sm);
-            background-color: #E5E5EA;
-        }
-
-        /* --- 列表區 --- */
-        .results-container {
-            padding: 0 20px 60px 20px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .place-card {
-            background: var(--ios-card);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.2s;
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-
+        #status { text-align: center; margin-top: 12px; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; min-height: 20px; }
+        .map-wrapper { padding: 0 20px; margin-bottom: 20px; }
+        #map { width: 100%; height: 35vh; border-radius: 24px; box-shadow: var(--shadow-sm); background-color: #E5E5EA; }
+        .results-container { padding: 0 20px 60px 20px; max-width: 600px; margin: 0 auto; }
+        .place-card { background: var(--ios-card); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); transition: transform 0.2s; border: 1px solid rgba(0,0,0,0.02); }
         .place-card:active { transform: scale(0.98); background-color: #F9F9F9; }
-
-        .place-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .place-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: #000;
-            line-height: 1.3;
-        }
-
-        .place-rating {
-            background: #F2F2F7;
-            color: var(--ios-orange);
-            padding: 4px 10px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .place-info {
-            font-size: 14px;
-            color: #8E8E93;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* --- 爸媽筆記 --- */
-        .parent-tips {
-            background-color: #F0F8FF;
-            color: #004085;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-top: 12px;
-        }
-        
-        .food-tips {
-            background-color: #FFF0F0;
-            color: #C02520;
-        }
-
+        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .place-name { font-size: 18px; font-weight: 700; color: #000; line-height: 1.3; }
+        .place-rating { background: #F2F2F7; color: var(--ios-orange); padding: 4px 10px; border-radius: 50px; font-size: 13px; font-weight: 700; }
+        .place-info { font-size: 14px; color: #8E8E93; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .parent-tips { background-color: #F0F8FF; color: #004085; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+        .food-tips { background-color: #FFF0F0; color: #C02520; }
         .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-        .tag {
-            background: #F2F2F7;
-            color: #8E8E93;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 100px;
-        }
-
+        .tag { background: #F2F2F7; color: #8E8E93; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 100px; }
         .open-now { color: var(--ios-green); }
         .closed-now { color: var(--ios-red); }
-
         .empty-state { text-align: center; margin-top: 40px; color: #C7C7CC; }
-        .empty-icon { font-size: 48px; margin-bottom: 10px; opacity: 0.5; }
-
+        #debug-info { text-align: center; font-size: 10px; color: #ff3b30; margin-top: 20px; opacity: 0.7; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -211,7 +57,7 @@
 <div class="controls-container">
     <div class="btn-group">
         <button id="btn-fun" onclick="switchMode('fun')">🎡 找好玩</button>
-        <button id="btn-food" onclick="switchMode('food')">🐶 親子友善餐廳</button>
+        <button id="btn-food" onclick="switchMode('food')">🐶 親子美食</button>
     </div>
     <div id="status">Ready to explore</div>
 </div>
@@ -222,12 +68,13 @@
 
 <div class="results-container" id="results">
     <div class="empty-state">
-        <div class="empty-icon">🗺️</div>
         <p>點選上方按鈕開始探索</p>
     </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
+<div id="debug-info"></div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&loading=async&libraries=places,maps"></script>
 
 <script>
     let map;
@@ -246,28 +93,15 @@
         
         if (!map) {
             map = new Map(document.getElementById("map"), {
-                center: center,
-                zoom: 15,
-                mapId: "DEMO_MAP_ID",
-                disableDefaultUI: true,
-                gestureHandling: "greedy"
+                center: center, zoom: 15, mapId: "DEMO_MAP_ID", disableDefaultUI: true, gestureHandling: "greedy"
             });
         } else {
-            map.setCenter(center);
-            map.setZoom(15);
+            map.setCenter(center); map.setZoom(15);
         }
 
         new google.maps.Marker({
-            position: center,
-            map: map,
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 10,
-                fillColor: "#007AFF",
-                fillOpacity: 1,
-                strokeWeight: 4,
-                strokeColor: "rgba(255, 255, 255, 0.8)",
-            },
+            position: center, map: map,
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 10, fillColor: "#007AFF", fillOpacity: 1, strokeWeight: 4, strokeColor: "white" },
             zIndex: 999 
         });
     }
@@ -281,12 +115,13 @@
         currentMode = mode;
         const btnFun = document.getElementById('btn-fun');
         const btnFood = document.getElementById('btn-food');
-        
-        // 1. 先清除舊的狀態 (解決卡住問題)
+        document.getElementById('debug-info').innerText = ""; // 清空錯誤訊息
+
+        // 1. 強制清空 (解決鬼打牆)
         document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
         clearMarkers();
 
-        // 2. 切換按鈕樣式
+        // 2. 切換樣式
         if (mode === 'fun') {
             btnFun.classList.add('active-fun');
             btnFood.className = ''; 
@@ -294,113 +129,120 @@
             btnFood.classList.add('active-food');
             btnFun.className = '';
         }
-
         startExplore();
     }
 
     function startExplore() {
         if (!currentMode) return;
-        
         const statusDiv = document.getElementById('status');
         statusDiv.innerHTML = "Locating...";
         
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    userLocation = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
-                    
+                    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                     statusDiv.innerHTML = "Searching nearby...";
                     await initMap(userLocation.lat, userLocation.lng);
                     
-                    // 執行對應的搜尋
                     if (currentMode === 'fun') {
                         await searchFunPlaces(userLocation);
                     } else {
-                        await searchKidFriendlyFood(userLocation);
+                        await searchFoodWithFallback(userLocation);
                     }
-                    
                     statusDiv.innerHTML = "Done";
                 },
-                (error) => {
-                    statusDiv.innerHTML = "❌ GPS Error";
-                }
+                (error) => { statusDiv.innerHTML = "❌ GPS Error"; }
             );
-        } else {
-            statusDiv.innerHTML = "❌ No GPS Support";
-        }
+        } else { statusDiv.innerHTML = "❌ No GPS Support"; }
     }
 
     async function searchFunPlaces(location) {
-        const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
-        
-        const request = {
-            fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-            locationRestriction: { center: location, radius: 1500 },
-            includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
-            maxResultCount: 10,
-            rankPreference: SearchNearbyRankPreference.POPULARITY,
-            language: 'zh-TW',
-        };
-
-        const { places } = await Place.searchNearby(request);
-        displayResults(places, 'fun');
+        try {
+            const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
+            const request = {
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                locationRestriction: { center: location, radius: 1500 },
+                includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
+                maxResultCount: 10,
+                rankPreference: SearchNearbyRankPreference.POPULARITY,
+                language: 'zh-TW',
+            };
+            const { places } = await Place.searchNearby(request);
+            displayResults(places, 'fun');
+        } catch (e) {
+            document.getElementById('debug-info').innerText = "景點搜尋錯誤: " + e.message;
+        }
     }
 
-    // 👶 + 🐶 升級版搜尋
-    async function searchKidFriendlyFood(location) {
+    // 🛡️ 雙重保險搜尋：先找親子 -> 失敗則找一般
+    async function searchFoodWithFallback(location) {
         const { Place } = await google.maps.importLibrary("places");
         
-        // 這裡把關鍵字改成「親子餐廳」加上「寵物友善」
-        const request = {
-            textQuery: "親子餐廳 寵物友善餐廳", 
-            fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-            locationBias: { center: location, radius: 1000 },
-            maxResultCount: 15,
-            openNow: true,
-            language: 'zh-TW',
-        };
-
+        // 嘗試 1: 親子 + 寵物搜尋
         try {
+            const request = {
+                textQuery: "親子餐廳 OR 寵物友善餐廳", 
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                locationBias: { center: location, radius: 1000 },
+                maxResultCount: 15,
+                openNow: false, // 暫時關閉 openNow 以避免過濾太多結果
+                language: 'zh-TW',
+            };
             const { places } = await Place.searchByText(request);
-            if (places.length > 0) {
+            
+            if (places && places.length > 0) {
                 displayResults(places, 'food');
-            } else {
-                document.getElementById('results').innerHTML = '<div class="empty-state"><p>附近找不到符合的餐廳🥲</p></div>';
+                return; // 成功就結束
             }
         } catch(e) {
-            console.error(e);
-            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋出錯，請重試</p></div>';
+            console.warn("親子搜尋失敗，切換備案", e);
+            document.getElementById('debug-info').innerText = "自動切換一般模式 (Error: " + e.message + ")";
+        }
+
+        // 嘗試 2 (備案): 一般餐廳搜尋 (使用 Nearby Search，這跟找景點用一樣的技術，最穩定)
+        try {
+            document.getElementById('status').innerHTML = "切換一般搜尋...";
+            const { SearchNearbyRankPreference } = await google.maps.importLibrary("places");
+            const fallbackRequest = {
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                locationRestriction: { center: location, radius: 1000 },
+                includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], // 找一般餐廳
+                maxResultCount: 15,
+                rankPreference: SearchNearbyRankPreference.POPULARITY,
+                language: 'zh-TW',
+            };
+            const { places } = await Place.searchNearby(fallbackRequest);
+            displayResults(places, 'food_fallback');
+        } catch(e) {
+            document.getElementById('results').innerHTML = '<div class="empty-state"><p>完全找不到餐廳😭</p></div>';
+            document.getElementById('debug-info').innerText += " | 備案也失敗: " + e.message;
         }
     }
 
     function displayResults(places, mode) {
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = ""; // 確保清空
-        
+        resultsDiv.innerHTML = ""; 
+        clearMarkers();
+
         if (!places || places.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state"><p>No results found.</p></div>';
+            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有符合的地點</p></div>';
             return;
         }
 
         places.forEach((place, index) => {
             const name = place.displayName;
             const rating = place.rating;
-            const address = place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, ''); 
+            const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "";
             const types = place.types || [];
             
-            let openStatus = place.businessStatus === 'OPERATIONAL' 
-                ? "<span class='open-now'>Open</span>" 
-                : "<span class='closed-now'>Closed</span>";
+            let openStatus = place.businessStatus === 'OPERATIONAL' ? "<span class='open-now'>Open</span>" : "<span class='closed-now'>Closed</span>";
 
             const advice = analyzeForParents(types, rating, mode);
-            const tipClass = mode === 'food' ? 'parent-tips food-tips' : 'parent-tips';
-            const icon = mode === 'food' ? '🐶' : '🎡';
+            const isFood = mode.includes('food');
+            const tipClass = isFood ? 'parent-tips food-tips' : 'parent-tips';
+            const icon = isFood ? '🐶' : '🎡';
 
             const delay = index * 0.1;
-
             const card = document.createElement('div');
             card.className = 'place-card';
             card.style.animation = `fadeInUp 0.5s ease forwards ${delay}s`;
@@ -409,29 +251,18 @@
                     <div class="place-name">${name}</div>
                     ${rating ? `<div class="place-rating">★ ${rating}</div>` : ''}
                 </div>
-                <div class="place-info">
-                    ${openStatus}  •  ${address}
-                </div>
-                <div class="${tipClass}">
-                    <span class="tip-icon">${icon}</span> ${advice}
-                </div>
-                <div class="tags">
-                    ${types.slice(0, 3).map(type => `<span class="tag">${formatType(type)}</span>`).join('')}
-                </div>
+                <div class="place-info">${openStatus}  •  ${address}</div>
+                <div class="${tipClass}"><span class="tip-icon">${icon}</span> ${advice}</div>
+                <div class="tags">${types.slice(0, 3).map(type => `<span class="tag">${formatType(type)}</span>`).join('')}</div>
             `;
             
             card.onclick = () => {
-                if (navigator.vibrate) navigator.vibrate(10);
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`, '_blank');
             };
-
             resultsDiv.appendChild(card);
             
             const marker = new google.maps.Marker({
-                position: place.location,
-                map: map,
-                title: name,
-                // 美食模式用不一樣顏色的標記 (如果想改這裡可以加)
+                position: place.location, map: map, title: name,
             });
             currentMarkers.push(marker);
         });
@@ -439,11 +270,12 @@
 
     function analyzeForParents(types, rating, mode) {
         let advice = "";
-        if (mode === 'food') {
-            advice = "親子友善環境。";
-            // 判斷是否可能寵物友善 (無法精準，但關鍵字搜尋通常有效)
-            advice += " 搜尋條件包含寵物友善。"; 
+        if (mode.includes('food')) {
+            if (mode === 'food') advice = "符合親子/寵物友善搜尋結果。";
+            else advice = "附近熱門餐廳 (一般模式)。";
+            
             if (rating > 4.5) advice += " 人氣高建議訂位。";
+            if (types.includes('cafe')) advice = "適合休息喝咖啡。";
         } else {
             if (types.includes('park')) advice = "3歲寶最愛！盡情放電。";
             else if (types.includes('museum') || types.includes('aquarium')) advice = "室內安全，好奇寶寶時間。";
@@ -454,17 +286,9 @@
     }
 
     function formatType(type) {
-        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食' };
+        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食', 'bakery': '烘焙' };
         return dict[type] || '地點';
     }
 </script>
-
-<style>
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
-
 </body>
 </html>
