@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iTravel OS</title>
+    <title>Travel OS</title>
     <style>
         /* --- iOS 核心風格設定 --- */
         :root {
-            --ios-bg: #F2F2F7; /* iOS 系統灰底 */
+            --ios-bg: #F2F2F7;
             --ios-card: #FFFFFF;
             --ios-blue: #007AFF;
             --ios-orange: #FF9500;
@@ -16,7 +16,6 @@
             --ios-gray-text: #8E8E93;
             --glass-material: rgba(255, 255, 255, 0.85);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
         }
 
         body {
@@ -25,26 +24,25 @@
             margin: 0;
             padding: 0;
             color: #1C1C1E;
-            -webkit-tap-highlight-color: transparent; /* 移除點擊藍框 */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- 頂部導航列 (毛玻璃特效) --- */
+        /* --- 頂部導航列 --- */
         header {
             background: var(--glass-material);
-            backdrop-filter: saturate(180%) blur(20px); /* 蘋果招牌毛玻璃 */
+            backdrop-filter: saturate(180%) blur(20px);
             -webkit-backdrop-filter: saturate(180%) blur(20px);
             position: sticky;
             top: 0;
             z-index: 100;
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
             padding: 12px 20px;
-            text-align: left;
         }
 
         header h1 {
             margin: 0;
             font-size: 28px;
-            font-weight: 800; /* iOS 大標題風格 */
+            font-weight: 800;
             letter-spacing: -0.5px;
         }
 
@@ -55,7 +53,7 @@
             font-weight: 500;
         }
 
-        /* --- 控制區塊 (懸浮膠囊) --- */
+        /* --- 控制區塊 --- */
         .controls-container {
             padding: 16px 20px;
             background: var(--ios-bg);
@@ -64,7 +62,7 @@
         .btn-group {
             display: flex;
             gap: 12px;
-            background: rgba(118, 118, 128, 0.12); /* 類似 iOS Segmented Control 底色 */
+            background: rgba(118, 118, 128, 0.12);
             padding: 4px;
             border-radius: 14px;
         }
@@ -77,12 +75,11 @@
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            transition: all 0.2s;
             background: transparent;
             color: var(--ios-gray-text);
         }
 
-        /* 活化狀態的按鈕 */
         button.active-fun {
             background: var(--ios-card);
             color: var(--ios-orange);
@@ -95,7 +92,6 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.12);
         }
 
-        /* 按下去的縮放效果 */
         button:active { transform: scale(0.96); }
 
         #status {
@@ -107,7 +103,7 @@
             min-height: 20px;
         }
 
-        /* --- 地圖 Widget 風格 --- */
+        /* --- 地圖 Widget --- */
         .map-wrapper {
             padding: 0 20px;
             margin-bottom: 20px;
@@ -115,7 +111,7 @@
         #map {
             width: 100%;
             height: 35vh;
-            border-radius: 24px; /* 超大圓角 */
+            border-radius: 24px;
             box-shadow: var(--shadow-sm);
             background-color: #E5E5EA;
         }
@@ -135,14 +131,9 @@
             box-shadow: var(--shadow-sm);
             transition: transform 0.2s;
             border: 1px solid rgba(0,0,0,0.02);
-            position: relative;
-            overflow: hidden;
         }
 
-        .place-card:active {
-            transform: scale(0.98); /* 卡片點擊回饋 */
-            background-color: #F9F9F9;
-        }
+        .place-card:active { transform: scale(0.98); background-color: #F9F9F9; }
 
         .place-header {
             display: flex;
@@ -165,9 +156,6 @@
             border-radius: 50px;
             font-size: 13px;
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
 
         .place-info {
@@ -179,7 +167,7 @@
             gap: 6px;
         }
 
-        /* --- 爸媽筆記 (類似 iMessage 氣泡) --- */
+        /* --- 爸媽筆記 --- */
         .parent-tips {
             background-color: #F0F8FF;
             color: #004085;
@@ -188,16 +176,12 @@
             font-size: 14px;
             line-height: 1.5;
             margin-top: 12px;
-            position: relative;
         }
         
-        /* 美食版筆記 */
         .food-tips {
             background-color: #FFF0F0;
             color: #C02520;
         }
-
-        .tip-icon { font-size: 16px; margin-right: 4px; }
 
         .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
         .tag {
@@ -212,12 +196,7 @@
         .open-now { color: var(--ios-green); }
         .closed-now { color: var(--ios-red); }
 
-        /* 歡迎畫面 */
-        .empty-state {
-            text-align: center;
-            margin-top: 40px;
-            color: #C7C7CC;
-        }
+        .empty-state { text-align: center; margin-top: 40px; color: #C7C7CC; }
         .empty-icon { font-size: 48px; margin-bottom: 10px; opacity: 0.5; }
 
     </style>
@@ -226,13 +205,13 @@
 
 <header>
     <h1>Travel OS</h1>
-    <p>Saturday, Nov 29 • Taichung</p>
+    <p>Saturday, Nov 29 • Family Trip</p>
 </header>
 
 <div class="controls-container">
     <div class="btn-group">
         <button id="btn-fun" onclick="switchMode('fun')">🎡 找好玩</button>
-        <button id="btn-food" onclick="switchMode('food')">👶 親子餐</button>
+        <button id="btn-food" onclick="switchMode('food')">🐶 親子友善餐廳</button>
     </div>
     <div id="status">Ready to explore</div>
 </div>
@@ -254,11 +233,11 @@
     let map;
     let userLocation = null;
     let currentMarkers = []; 
-    let currentMode = null; // 'fun' or 'food'
+    let currentMode = null; 
 
-    // 更新標題日期
+    // 更新日期
     const date = new Date();
-    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+    const options = { weekday: 'short', month: 'short', day: 'numeric' };
     document.querySelector('header p').textContent = date.toLocaleDateString('en-US', options) + " • Family Trip";
 
     async function initMap(lat, lng) {
@@ -270,7 +249,7 @@
                 center: center,
                 zoom: 15,
                 mapId: "DEMO_MAP_ID",
-                disableDefaultUI: true, // 極簡模式
+                disableDefaultUI: true,
                 gestureHandling: "greedy"
             });
         } else {
@@ -278,7 +257,6 @@
             map.setZoom(15);
         }
 
-        // 藍色脈衝定位點 (更像 iOS 原生)
         new google.maps.Marker({
             position: center,
             map: map,
@@ -299,16 +277,19 @@
         currentMarkers = [];
     }
 
-    // 切換模式並觸發搜尋
     function switchMode(mode) {
         currentMode = mode;
         const btnFun = document.getElementById('btn-fun');
         const btnFood = document.getElementById('btn-food');
         
-        // 切換按鈕樣式
+        // 1. 先清除舊的狀態 (解決卡住問題)
+        document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
+        clearMarkers();
+
+        // 2. 切換按鈕樣式
         if (mode === 'fun') {
             btnFun.classList.add('active-fun');
-            btnFood.className = ''; // 清除樣式
+            btnFood.className = ''; 
         } else {
             btnFood.classList.add('active-food');
             btnFun.className = '';
@@ -334,6 +315,7 @@
                     statusDiv.innerHTML = "Searching nearby...";
                     await initMap(userLocation.lat, userLocation.lng);
                     
+                    // 執行對應的搜尋
                     if (currentMode === 'fun') {
                         await searchFunPlaces(userLocation);
                     } else {
@@ -351,7 +333,6 @@
         }
     }
 
-    // 搜尋邏輯 (沿用之前的強大邏輯)
     async function searchFunPlaces(location) {
         const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
         
@@ -368,11 +349,13 @@
         displayResults(places, 'fun');
     }
 
+    // 👶 + 🐶 升級版搜尋
     async function searchKidFriendlyFood(location) {
         const { Place } = await google.maps.importLibrary("places");
         
+        // 這裡把關鍵字改成「親子餐廳」加上「寵物友善」
         const request = {
-            textQuery: "親子餐廳 家庭餐廳", 
+            textQuery: "親子餐廳 寵物友善餐廳", 
             fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
             locationBias: { center: location, radius: 1000 },
             maxResultCount: 15,
@@ -382,21 +365,30 @@
 
         try {
             const { places } = await Place.searchByText(request);
-            displayResults(places, 'food');
+            if (places.length > 0) {
+                displayResults(places, 'food');
+            } else {
+                document.getElementById('results').innerHTML = '<div class="empty-state"><p>附近找不到符合的餐廳🥲</p></div>';
+            }
         } catch(e) {
             console.error(e);
+            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋出錯，請重試</p></div>';
         }
     }
 
     function displayResults(places, mode) {
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = "";
-        clearMarkers();
+        resultsDiv.innerHTML = ""; // 確保清空
+        
+        if (!places || places.length === 0) {
+            resultsDiv.innerHTML = '<div class="empty-state"><p>No results found.</p></div>';
+            return;
+        }
 
         places.forEach((place, index) => {
             const name = place.displayName;
             const rating = place.rating;
-            const address = place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, ''); // 簡化地址
+            const address = place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, ''); 
             const types = place.types || [];
             
             let openStatus = place.businessStatus === 'OPERATIONAL' 
@@ -405,9 +397,8 @@
 
             const advice = analyzeForParents(types, rating, mode);
             const tipClass = mode === 'food' ? 'parent-tips food-tips' : 'parent-tips';
-            const icon = mode === 'food' ? '🍽️' : '🎡';
+            const icon = mode === 'food' ? '🐶' : '🎡';
 
-            // 動畫延遲效果
             const delay = index * 0.1;
 
             const card = document.createElement('div');
@@ -419,7 +410,7 @@
                     ${rating ? `<div class="place-rating">★ ${rating}</div>` : ''}
                 </div>
                 <div class="place-info">
-                    ${openStatus} &nbsp;•&nbsp; ${address}
+                    ${openStatus}  •  ${address}
                 </div>
                 <div class="${tipClass}">
                     <span class="tip-icon">${icon}</span> ${advice}
@@ -430,29 +421,29 @@
             `;
             
             card.onclick = () => {
-                // 觸發震動回饋 (如果手機支援)
                 if (navigator.vibrate) navigator.vibrate(10);
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`, '_blank');
             };
 
             resultsDiv.appendChild(card);
             
-            // 地圖標記
-            new google.maps.Marker({
+            const marker = new google.maps.Marker({
                 position: place.location,
                 map: map,
                 title: name,
+                // 美食模式用不一樣顏色的標記 (如果想改這裡可以加)
             });
+            currentMarkers.push(marker);
         });
     }
 
-    // 分析邏輯 (保持不變)
     function analyzeForParents(types, rating, mode) {
         let advice = "";
         if (mode === 'food') {
-            advice = "友善餐廳，環境應較適合幼童。";
+            advice = "親子友善環境。";
+            // 判斷是否可能寵物友善 (無法精準，但關鍵字搜尋通常有效)
+            advice += " 搜尋條件包含寵物友善。"; 
             if (rating > 4.5) advice += " 人氣高建議訂位。";
-            if (types.includes('cafe')) advice = "適合爸媽休息喝咖啡。";
         } else {
             if (types.includes('park')) advice = "3歲寶最愛！盡情放電。";
             else if (types.includes('museum') || types.includes('aquarium')) advice = "室內安全，好奇寶寶時間。";
@@ -469,7 +460,6 @@
 </script>
 
 <style>
-    /* 列表動畫 */
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
