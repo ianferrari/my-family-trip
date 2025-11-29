@@ -3,24 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>親子智慧導遊 (2025最新版)</title>
+    <title>親子智慧導遊 (景點+美食版)</title>
     <style>
         body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; color: #333; }
         header { background-color: #00bcd4; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 1.2rem; }
         header p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+        
+        /* 控制區塊：改成彈性佈局，放兩顆按鈕 */
         .controls { padding: 15px; text-align: center; background: white; border-bottom: 1px solid #eee; }
-        button#find-btn { background-color: #ff9800; color: white; border: none; padding: 12px 25px; font-size: 1rem; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        button#find-btn:disabled { background-color: #ccc; }
-        #status { margin-top: 10px; font-size: 0.9rem; color: #666; }
-        #map { width: 100%; height: 35vh; background-color: #e0e0e0; }
-        .results-container { padding: 15px; max-width: 800px; margin: 0 auto; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
+        
+        /* 按鈕樣式 */
+        button { border: none; padding: 12px 20px; font-size: 0.95rem; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: white; flex: 1; max-width: 200px; transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
+        button:disabled { background-color: #ccc !important; }
+        
+        /* 景點按鈕 (橘色) */
+        .btn-fun { background-color: #ff9800; }
+        /* 美食按鈕 (紅色) */
+        .btn-food { background-color: #ff5252; }
+
+        #status { margin-top: 5px; font-size: 0.9rem; color: #666; min-height: 1.2em; }
+        #map { width: 100%; height: 40vh; background-color: #e0e0e0; } /* 地圖加大一點 */
+        
+        .results-container { padding: 15px; max-width: 800px; margin: 0 auto; padding-bottom: 50px; }
         .place-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .place-name { font-size: 1.1rem; font-weight: bold; color: #2c3e50; margin: 0; }
-        .place-rating { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
+        .place-rating { background: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
         .place-info { font-size: 0.9rem; color: #555; margin: 5px 0; }
+        
+        /* 爸媽筆記樣式 */
         .parent-tips { background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 0.85rem; }
+        .food-tips { background-color: #ffebee; border-left: 4px solid #ff5252; } /* 美食專用紅色筆記 */
+        
         .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
         .tag { background: #f0f0f0; color: #666; font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; }
         .open-now { color: #28a745; font-weight: bold; }
@@ -31,43 +48,54 @@
 
 <header>
     <h1>🌍 爸媽的旅遊神隊友</h1>
-    <p>2025 全新升級版 - 找景點更精準</p>
+    <p>找好玩・找好吃・一鍵搞定</p>
 </header>
 
 <div class="controls">
-    <button id="find-btn" onclick="startExplore()">📍 搜尋附近熱門景點</button>
+    <div class="btn-group">
+        <button class="btn-fun" id="btn-fun" onclick="startExplore('fun')">🎡 找景點</button>
+        <button class="btn-food" id="btn-food" onclick="startExplore('food')">🍽️ 找美食</button>
+    </div>
     <div id="status">準備就緒</div>
 </div>
 
 <div id="map"></div>
 
 <div class="results-container" id="results">
-    <p style="text-align:center; color:#999; margin-top:30px;">點擊上方按鈕開始探索...</p>
+    <p style="text-align:center; color:#999; margin-top:30px;">請選擇上方功能開始探索...</p>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&loading=async&libraries=places,maps"></script>
 
 <script>
     let map;
     let userLocation = null;
+    let currentMarkers = []; // 紀錄地圖上的標記，方便切換時清除
 
-    // 初始化地圖 (改用現代的 async/await 寫法)
+    // 初始化地圖
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
         
-        map = new Map(document.getElementById("map"), {
-            center: center,
-            zoom: 15,
-            mapId: "DEMO_MAP_ID", // 2025新版建議加上 mapId，這裡先用測試用的
-            disableDefaultUI: true
-        });
+        // 如果地圖還沒建立，才建立新的，不然就只要移動中心點就好
+        if (!map) {
+            map = new Map(document.getElementById("map"), {
+                center: center,
+                zoom: 15,
+                mapId: "DEMO_MAP_ID",
+                disableDefaultUI: true,
+                gestureHandling: "greedy" // 讓手指滑動更順暢
+            });
+        } else {
+            map.setCenter(center);
+            map.setZoom(15);
+        }
 
+        // 標記我的位置
         new google.maps.Marker({
             position: center,
             map: map,
             title: "你的位置",
-             // 讓這顆標記變成藍色小點圖示
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 8,
@@ -75,16 +103,27 @@
                 fillOpacity: 1,
                 strokeWeight: 2,
                 strokeColor: "white",
-            }
+            },
+            zIndex: 999 // 永遠在最上面
         });
     }
 
-    // 按鈕觸發
-    function startExplore() {
+    // 清除舊標記
+    function clearMarkers() {
+        currentMarkers.forEach(marker => marker.setMap(null));
+        currentMarkers = [];
+    }
+
+    // 按鈕觸發 (mode = 'fun' 或 'food')
+    function startExplore(mode) {
         const statusDiv = document.getElementById('status');
-        const btn = document.getElementById('find-btn');
+        const btnFun = document.getElementById('btn-fun');
+        const btnFood = document.getElementById('btn-food');
+        
+        // 更新按鈕狀態
+        btnFun.disabled = true;
+        btnFood.disabled = true;
         statusDiv.innerHTML = "📡 定位中...";
-        btn.disabled = true;
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -93,144 +132,174 @@
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
                     };
-                    statusDiv.innerHTML = "✅ 定位成功！正在呼叫新版 AI 搜尋...";
                     
-                    // 初始化地圖並移動過去
+                    const modeText = mode === 'fun' ? "好玩景點" : "美味餐廳";
+                    statusDiv.innerHTML = `✅ 定位成功！搜尋附近${modeText}...`;
+                    
                     await initMap(userLocation.lat, userLocation.lng);
+                    await searchNearby(userLocation, mode);
                     
-                    // 執行新版搜尋
-                    await searchNearbyNew(userLocation);
-                    btn.disabled = false;
+                    btnFun.disabled = false;
+                    btnFood.disabled = false;
                 },
                 (error) => {
-                    statusDiv.innerHTML = "❌ 定位失敗，請確認手機 GPS 已開啟。";
-                    console.error(error);
-                    btn.disabled = false;
+                    statusDiv.innerHTML = "❌ 定位失敗，請確認 GPS。";
+                    btnFun.disabled = false;
+                    btnFood.disabled = false;
                 }
             );
         } else {
             statusDiv.innerHTML = "❌ 瀏覽器不支援定位。";
-            btn.disabled = false;
         }
     }
 
-    // 🌟 核心：使用 Google Maps New Places API (2025 Version)
-    async function searchNearbyNew(location) {
+    // 🌟 核心搜尋功能
+    async function searchNearby(location, mode) {
         const statusDiv = document.getElementById('status');
         const resultsDiv = document.getElementById('results');
         
         try {
-            // 匯入新版地點庫
             const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
 
-            // 設定搜尋條件
+            // 根據模式設定要找的類型
+            let targetTypes = [];
+            if (mode === 'fun') {
+                targetTypes = ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium', 'amusement_park'];
+            } else {
+                targetTypes = ['restaurant', 'cafe', 'bakery', 'ice_cream_shop', 'meal_takeaway'];
+            }
+
             const request = {
-                // 必要的欄位 (如果不指定，可能會被多收費或報錯)
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
                 locationRestriction: {
                     center: location,
                     radius: 1500, // 1.5 公里
                 },
-                // 設定要找的類型 (包含景點、公園、博物館、商場)
-                includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium', 'amusement_park'],
-                maxResultCount: 10,
+                includedPrimaryTypes: targetTypes,
+                maxResultCount: 15,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
                 language: 'zh-TW',
             };
 
-            // 執行搜尋
             const { places } = await Place.searchNearby(request);
 
+            // 清空舊結果
+            resultsDiv.innerHTML = "";
+            clearMarkers();
+
             if (places.length > 0) {
-                statusDiv.innerHTML = `🎉 成功找到 ${places.length} 個熱門地點！`;
-                displayNewResults(places);
+                statusDiv.innerHTML = `🎉 找到 ${places.length} 個推薦地點！`;
+                displayResults(places, mode);
             } else {
-                statusDiv.innerHTML = "⚠️ 附近 1.5 公里內沒有找到特定景點。";
-                resultsDiv.innerHTML = "<p style='text-align:center;'>附近好像比較荒涼，試試看擴大範圍？</p>";
+                statusDiv.innerHTML = "⚠️ 附近 1.5 公里內沒有找到相關地點。";
+                resultsDiv.innerHTML = "<p style='text-align:center;'>附近有點荒涼，試試看別的地方？</p>";
             }
 
         } catch (error) {
-            console.error("搜尋發生錯誤:", error);
-            statusDiv.innerHTML = "❌ 搜尋出錯，請看 Console 錯誤訊息 (可能需要啟用 Places API New)。";
+            console.error(error);
+            statusDiv.innerHTML = "❌ 搜尋出錯，請看 Console。";
         }
     }
 
-    // 顯示結果卡片
-    function displayNewResults(places) {
+    // 顯示結果
+    function displayResults(places, mode) {
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = "";
 
         places.forEach(place => {
-            // 新版 API 的資料結構稍有不同
-            const name = place.displayName; // 這裡直接取字串
+            const name = place.displayName;
             const rating = place.rating;
             const address = place.formattedAddress;
             const types = place.types || [];
             
-            // 判斷營業狀態 (新版 API 的 businessStatus)
             let openStatus = "";
             if (place.businessStatus === 'OPERATIONAL') {
-                openStatus = "<span class='open-now'>🟢 正常營運中</span>";
+                openStatus = "<span class='open-now'>🟢 營業中</span>";
             } else {
-                openStatus = "<span class='closed-now'>🔴 可能已關閉</span>";
+                openStatus = "<span class='closed-now'>🔴 休息/關閉</span>";
             }
 
-            // AI 導遊分析
-            const advice = analyzeForParents(types, rating);
+            // 取得建議
+            const advice = analyzeForParents(types, rating, mode);
+            // 根據模式換顏色
+            const tipClass = mode === 'food' ? 'parent-tips food-tips' : 'parent-tips';
+            const icon = mode === 'food' ? '🍴' : '👶';
 
             const card = document.createElement('div');
             card.className = 'place-card';
             card.innerHTML = `
                 <div class="place-header">
                     <h3 class="place-name">${name}</h3>
-                    ${rating ? `<div class="place-rating">★ ${rating}</div>` : ''}
+                    ${rating ? `<div class="place-rating">★ ${rating} <span style="font-weight:normal;color:#999">(${place.userRatingCount})</span></div>` : ''}
                 </div>
                 <div class="place-info">
                     ${openStatus} <br> 📍 ${address}
                 </div>
-                <div class="parent-tips">
-                    <strong>👶 爸媽筆記：</strong> ${advice}
+                <div class="${tipClass}">
+                    <strong>${icon} 爸媽筆記：</strong> ${advice}
                 </div>
                 <div class="tags">
                     ${types.slice(0, 3).map(type => `<span class="tag">${formatType(type)}</span>`).join('')}
                 </div>
             `;
             
-            // 點擊導航
             card.onclick = () => {
-                // 使用地點名稱進行導航
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`, '_blank');
+                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`, '_blank');
             };
 
             resultsDiv.appendChild(card);
             
-            // 加地圖標記
-            new google.maps.Marker({
+            // 地圖標記
+            const marker = new google.maps.Marker({
                 position: place.location,
                 map: map,
-                title: name
+                title: name,
+                // 美食模式用紅色標記，景點用預設紅色
+                // 這裡可以進階自訂圖示，先用預設的比較穩
             });
+            currentMarkers.push(marker);
         });
     }
 
-    function analyzeForParents(types, rating) {
-        let advice = "熱門地點，建議先查評論。";
-        if (types.includes('park') || types.includes('amusement_park')) {
-            advice = "🔋 **放電首選！** 戶外空間大，記得防蚊防曬。";
-        } else if (types.includes('museum') || types.includes('art_gallery')) {
-            advice = "🤫 **室內行程**，雨天備案，留意是否可推推車。";
-        } else if (types.includes('shopping_mall')) {
-            advice = "🚗 **停車補給方便**，通常有哺乳室與冷氣。";
-        } else if (types.includes('zoo') || types.includes('aquarium')) {
-            advice = "🦄 **必去！** 小孩會很愛，建議預留半天時間。";
-        } else if (rating > 4.5) {
-            advice = "🌟 **高分好評**，人潮可能較多，注意小孩安全。";
+    // 💡 升級版 AI 導遊：加入餐廳邏輯
+    function analyzeForParents(types, rating, mode) {
+        let advice = "";
+
+        if (mode === 'food') {
+            // --- 美食模式建議 ---
+            if (types.includes('cafe') || types.includes('coffee_shop')) {
+                advice = "爸媽充電站！適合點杯咖啡休息，留意有無兒童甜點。";
+            } else if (types.includes('ice_cream_shop') || types.includes('bakery')) {
+                advice = "🍦 **安撫神店！** 小孩鬧脾氣時帶來這裡就對了。";
+            } else if (types.includes('meal_takeaway')) {
+                advice = "外帶方便，若小孩太累可以在車上或飯店吃。";
+            } else if (rating > 4.5) {
+                advice = "高人氣餐廳，建議先看有沒有兒童椅或是否需排隊。";
+            } else {
+                advice = "建議查詢是否有兒童餐具或不辣的餐點。";
+            }
+        } else {
+            // --- 景點模式建議 ---
+            if (types.includes('park') || types.includes('amusement_park')) {
+                advice = "🔋 **放電首選！** 戶外空間大，記得防蚊防曬。";
+            } else if (types.includes('museum') || types.includes('art_gallery')) {
+                advice = "🤫 **室內行程**，雨天備案，留意是否可推推車。";
+            } else if (types.includes('shopping_mall')) {
+                advice = "🚗 **停車補給方便**，通常有哺乳室與冷氣。";
+            } else if (rating > 4.5) {
+                advice = "🌟 **高分好評**，人潮可能較多，注意小孩安全。";
+            } else {
+                advice = "熱門地點，建議點擊查看詳細評論與照片。";
+            }
         }
         return advice;
     }
 
     function formatType(type) {
-        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'museum': '博物館', 'shopping_mall': '商場', 'restaurant': '餐廳', 'place_of_worship': '廟宇/教堂', 'store': '商店' };
+        const dict = { 
+            'tourist_attraction': '景點', 'park': '公園', 'museum': '博物館', 'shopping_mall': '商場', 
+            'restaurant': '餐廳', 'cafe': '咖啡廳', 'bakery': '麵包店', 'ice_cream_shop': '冰淇淋', 
+            'meal_takeaway': '外帶美食', 'store': '商店', 'food': '食物'
+        };
         return dict[type] || type;
     }
 </script>
