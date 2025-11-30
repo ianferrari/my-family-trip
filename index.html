@@ -3,212 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS - Free V2</title>
+    <title>Travel OS Pro - Neural</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
     <style>
         :root {
-            --bg-dark: #050505;
-            --glass-panel: rgba(20, 20, 25, 0.9);
-            --neon-accent: #00f3ff;
-            --neon-warn: #ff0055;
-            --card-radius: 20px;
+            --bg-dark: #000000;
+            --glass-panel: rgba(30, 30, 35, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --neon-accent: #0A84FF;
+            --neon-warn: #FF453A;
+            --neon-success: #32D74B;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9898A0;
+            --card-radius: 24px;
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Inter', -apple-system, sans-serif; 
             background-color: var(--bg-dark); 
-            background-image: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+            background-image: 
+                radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%),
+                radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
+            background-attachment: fixed;
             margin: 0; padding: 0; 
-            color: #fff; 
+            color: var(--text-primary); 
+            -webkit-tap-highlight-color: transparent; 
             padding-bottom: 100px;
         }
         
-        /* 介面樣式 */
+        /* 🌀 Header */
         header { 
-            background: rgba(20,20,20,0.8); backdrop-filter: blur(10px);
-            margin: 16px; padding: 16px 24px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(20, 20, 20, 0.6); 
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px);
+            margin: 16px; padding: 16px 24px; 
+            border-radius: 40px; border: 1px solid var(--glass-border);
             display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: sticky; top: 16px; z-index: 100;
+        }
+        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; background: linear-gradient(90deg, #fff, #8E8E93); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        header p { margin: 2px 0 0; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .header-dot { width: 8px; height: 8px; background: var(--neon-success); border-radius: 50%; box-shadow: 0 0 10px var(--neon-success); }
+        
+        /* 🔘 Tabs */
+        .main-tabs { 
+            display: flex; margin: 10px 16px; 
+            background: rgba(40, 40, 45, 0.5); 
+            padding: 6px; border-radius: 32px; 
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+        .tab-btn { 
+            flex: 1; border: none; background: transparent; color: var(--text-secondary); 
+            padding: 12px 0; border-radius: 26px; font-size: 13px; font-weight: 600; 
+            cursor: pointer; transition: all 0.4s; position: relative;
+        }
+        .tab-btn.active { background: rgba(60, 60, 65, 0.8); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        
+        /* 💊 Chips */
+        .sub-nav-container { margin: 0; overflow: hidden; padding: 10px 0; }
+        .sub-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
+        .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+        .chip-btn { 
+            border: 1px solid var(--glass-border); background: rgba(30,30,35, 0.4); color: #fff;
+            padding: 10px 20px; font-size: 13px; font-weight: 500; border-radius: 100px; 
+            white-space: nowrap; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px);
+        }
+        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
+
+        /* 🗺️ Map */
+        .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
+        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--glass-border); }
+        
+        /* 🃏 Cards */
+        .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+        .place-card { 
+            background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
+            padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         
-        .main-tabs { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 10px; }
-        .tab-btn { 
-            flex: 1; background: #222; border: 1px solid #333; color: #888; 
-            padding: 10px 0; border-radius: 12px; font-size: 13px; font-weight: 600;
+        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .place-name { font-size: 19px; font-weight: 700; color: #fff; line-height: 1.3; width: 75%; }
+        
+        /* 評分標籤 */
+        .place-rating { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
+        .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); box-shadow: 0 0 10px rgba(50, 215, 75, 0.1); }
+        .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); box-shadow: 0 0 10px rgba(255, 69, 58, 0.1); border: 1px solid rgba(255, 69, 58, 0.3); }
+
+        .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+        
+        /* 💬 評論區塊 (新) */
+        .review-box { 
+            background: rgba(0,0,0,0.2); padding: 14px; border-radius: 16px; 
+            font-size: 13px; line-height: 1.5; color: #ddd; margin-bottom: 16px;
+            border-left: 3px solid;
         }
-        .tab-btn.active { background: #333; color: #fff; border-color: #555; }
+        .review-box.good { border-color: var(--neon-success); }
+        .review-box.bad { border-color: var(--neon-warn); background: rgba(255, 69, 58, 0.05); }
+        
+        .review-title { font-weight: 700; margin-bottom: 4px; display: block; font-size: 12px; opacity: 0.9; }
+        .review-text { font-style: italic; opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding: 10px 16px; }
-        .chip-btn { 
-            background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.3); color: var(--neon-accent);
-            padding: 8px 16px; border-radius: 100px; white-space: nowrap; font-size: 12px;
-        }
-        .chip-btn.active { background: var(--neon-accent); color: #000; font-weight: bold; }
-
-        #map { height: 35vh; margin: 0 16px; border-radius: 20px; border: 1px solid #333; filter: grayscale(100%) invert(100%) contrast(0.9); }
-        /* 反轉顏色讓原本白色的地圖變成黑色風格，解決讀取問題 */
-
-        .place-card { 
-            background: #111; border: 1px solid #333; border-radius: 16px; 
-            padding: 16px; margin: 16px; position: relative;
-        }
-        .place-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #fff; }
-        .place-info { font-size: 12px; color: #888; margin-bottom: 12px; }
-
-        .btn-group { display: flex; gap: 10px; }
         .action-btn {
-            flex: 1; text-align: center; padding: 10px; border-radius: 8px;
-            font-size: 12px; font-weight: bold; text-decoration: none;
+            display: block; width: 100%; text-align: center; 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px 0; border-radius: 16px;
+            font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
         }
-        .btn-nav { background: var(--neon-accent); color: #000; }
-        .btn-review { background: #333; color: #fff; border: 1px solid #555; }
+        .action-btn:hover { background: var(--neon-accent); border-color: var(--neon-accent); }
 
-        #status { text-align: center; font-size: 12px; color: #666; margin: 10px 0; }
+        #status { text-align: center; margin: 10px 0; font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .gm-style-cc { display: none !important; }
     </style>
 </head>
 <body>
 
 <header>
-    <h3>OSM Scanner <span style="font-size:10px; opacity:0.5">V2.0</span></h3>
-    <div style="width:8px; height:8px; background:#0f0; border-radius:50%;"></div>
+    <div>
+        <h1>Travel OS <span style="font-weight:300; opacity:0.7">Neural</span></h1>
+        <p>Proximity & Review System</p>
+    </div>
+    <div class="header-dot"></div>
 </header>
 
 <div class="main-tabs">
-    <button class="tab-btn active" onclick="setCat('fun')">玩樂</button>
-    <button class="tab-btn" onclick="setCat('food')">美食</button>
-    <button class="tab-btn" onclick="setCat('medical')">醫療</button>
+    <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
+    <button class="tab-btn" onclick="selectCategory('food')">美食</button>
+    <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
+    <button class="tab-btn" onclick="selectCategory('life')">便利</button>
 </div>
 
-<div class="sub-scroll-wrapper" id="sub-nav"></div>
+<div class="sub-nav-container">
+    <div class="sub-scroll-wrapper" id="sub-nav"></div>
+</div>
 
-<div id="status">READY</div>
-<div id="map"></div>
-<div id="results"></div>
+<div id="status">SYSTEM READY</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div class="map-wrapper">
+    <div id="map"></div>
+</div>
+
+<div class="results-container" id="results">
+    <div style="text-align: center; margin-top: 60px; opacity: 0.5;">
+        <h3 style="font-weight:300; letter-spacing:1px;">AWAITING INPUT</h3>
+        <p style="font-size:12px;">Select a category to scan nearby locations</p>
+    </div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
+
 <script>
-    let map, userMarker, userLat, userLng;
-    // 備用伺服器列表，如果第一個掛了會試第二個
-    const API_SERVERS = [
-        'https://overpass-api.de/api/interpreter',
-        'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
-        'https://overpass.kumi.systems/api/interpreter'
-    ];
+    let map;
+    let userLocation = null;
+    let currentMarkers = [];
+    let currentCircle = null;
 
-    const CATS = {
+    // 🌟 修正後的分類：關鍵字更廣泛，確保搜尋到「附近」的小點
+    const CATEGORIES = {
         'fun': [
-            {n:"公園", q:'leisure=park'}, {n:"百貨", q:'shop=department_store'}, 
-            {n:"景點", q:'tourism=attraction'}
+            { name: "附近公園", query: "公園", icon: "🛝" }, 
+            { name: "百貨購物", query: "百貨公司 購物中心", icon: "🛍️" },
+            { name: "室內遊樂", query: "室內遊樂園 親子館 遊戲場", icon: "🧩" },
+            { name: "景點", query: "觀光景點", icon: "📸" },
+            { name: "書店圖館", query: "書店 圖書館", icon: "📚" }
         ],
         'food': [
-            {n:"餐廳", q:'amenity=restaurant'}, {n:"咖啡", q:'amenity=cafe'}, 
-            {n:"速食", q:'amenity=fast_food'}
+            { name: "親子餐廳", query: "親子餐廳", icon: "👶" },
+            { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "🍰" },
+            { name: "在地小吃", query: "小吃 麵店 便當", icon: "🍜" },
+            { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" },
+            { name: "早午餐", query: "早午餐", icon: "🥪" }
         ],
         'medical': [
-            {n:"醫院", q:'amenity=hospital'}, {n:"診所", q:'amenity=clinic'}, 
-            {n:"藥局", q:'amenity=pharmacy'}
+            // 關鍵字包含一般診所、內科、家醫科
+            { name: "一般診所", query: "診所 家醫科 內科 耳鼻喉科", icon: "🩺" },
+            { name: "小兒科", query: "小兒科", icon: "👶" },
+            { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
+            { name: "藥局", query: "藥局", icon: "💊" }
+        ],
+        'life': [
+            // 關鍵字包含魚中魚等賣場
+            { name: "動物水族", query: "寵物店 水族館 魚中魚", icon: "🐠" },
+            { name: "便利超商", query: "便利商店 7-11 全家", icon: "🏪" },
+            { name: "停車場", query: "停車場", icon: "🅿️" },
+            { name: "加油站", query: "加油站", icon: "⛽" }
         ]
     };
 
-    window.onload = () => {
-        // 初始化地圖 (先用預設台北，等GPS)
-        map = L.map('map').setView([25.033, 121.565], 15);
-        // 使用最標準的 OSM 圖層，但透過 CSS濾鏡把它變黑，這樣最穩定
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(map);
-        
-        setCat('fun');
-        
-        if(navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(pos => {
-                userLat = pos.coords.latitude;
-                userLng = pos.coords.longitude;
-                map.setView([userLat, userLng], 16);
-                L.marker([userLat, userLng]).addTo(map).bindPopup("You are here").openPopup();
-                document.getElementById('status').innerText = "GPS LOCKED";
-            }, err => {
-                document.getElementById('status').innerText = "GPS FAILED: " + err.message;
-            });
-        }
-    };
+    let currentCategory = 'fun';
+    window.onload = () => { renderSubNav('fun'); };
 
-    function setCat(key) {
-        const div = document.getElementById('sub-nav');
-        div.innerHTML = '';
-        CATS[key].forEach(c => {
-            const b = document.createElement('button');
-            b.className = 'chip-btn';
-            b.innerText = c.n;
-            b.onclick = () => search(c.q, b);
-            div.appendChild(b);
+    function selectCategory(cat) {
+        currentCategory = cat;
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        renderSubNav(cat);
+    }
+
+    function renderSubNav(cat) {
+        const container = document.getElementById('sub-nav');
+        container.innerHTML = '';
+        const options = CATEGORIES[cat];
+        options.forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = 'chip-btn';
+            btn.innerHTML = `${opt.icon} ${opt.name}`;
+            btn.onclick = () => startSearch(opt.query, btn);
+            container.appendChild(btn);
         });
     }
 
-    async function search(queryStr, btn) {
-        if(!userLat) { alert("等待 GPS 定位中..."); return; }
-        
+    function startSearch(query, btnElement) {
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('status').innerText = "SCANNING...";
-        document.getElementById('results').innerHTML = '<p style="text-align:center; padding:20px; color:#666">連線中...</p>';
+        btnElement.classList.add('active');
+        
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerHTML = "📡 SCANNING NEARBY...";
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#666;"><p>Triangulating data...</p></div>';
+        clearMarkers();
 
-        const [k, v] = queryStr.split('=');
-        // 搜尋半徑 1000 公尺
-        const ql = `[out:json][timeout:10];(node["${k}"="${v}"](around:1000,${userLat},${userLng}););out;`;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    statusDiv.innerHTML = `TARGET: ${query}`;
+                    await initMap(userLocation.lat, userLocation.lng);
+                    await performSearch(userLocation, query);
+                    statusDiv.innerHTML = "SCAN COMPLETE";
+                },
+                (error) => {
+                    statusDiv.innerHTML = "GPS ERROR";
+                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:#FF453A;"><h3>Location Required</h3><p>Please enable GPS to find nearby places.</p></div>';
+                }
+            );
+        } else { statusDiv.innerHTML = "SYSTEM ERROR"; }
+    }
 
-        // 嘗試輪流使用伺服器
-        let success = false;
-        for (let server of API_SERVERS) {
-            try {
-                console.log("Trying server:", server);
-                const res = await fetch(server, { method: 'POST', body: ql });
-                if (!res.ok) throw new Error("Server blocked");
-                const data = await res.json();
-                render(data.elements);
-                document.getElementById('status').innerText = "FOUND " + data.elements.length + " PLACES";
-                success = true;
-                break; // 成功就跳出迴圈
-            } catch (e) {
-                console.warn("Server failed, trying next...", e);
-            }
+    async function initMap(lat, lng) {
+        const { Map } = await google.maps.importLibrary("maps");
+        const center = { lat: lat, lng: lng };
+        const darkMapStyle = [
+            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+        ];
+
+        if (!map) {
+            map = new Map(document.getElementById("map"), {
+                center: center, zoom: 15, mapId: "DEMO_MAP_ID", 
+                disableDefaultUI: true, gestureHandling: "greedy", styles: darkMapStyle
+            });
+        } else {
+            map.setCenter(center); map.setZoom(15); map.setOptions({ styles: darkMapStyle });
         }
 
-        if (!success) {
-            document.getElementById('status').innerText = "ALL SERVERS BUSY";
-            document.getElementById('results').innerHTML = '<p style="text-align:center; color:#ff0055">伺服器忙碌中，請稍後再試</p>';
+        if (currentCircle) currentCircle.setMap(null);
+        currentCircle = new google.maps.Marker({
+            position: center, map: map,
+            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#0A84FF", fillOpacity: 1, strokeWeight: 4, strokeColor: "rgba(10, 132, 255, 0.3)" },
+            zIndex: 999 
+        });
+    }
+
+    function clearMarkers() {
+        currentMarkers.forEach(marker => marker.setMap(null));
+        currentMarkers = [];
+    }
+
+    // 🌟 核心搜尋邏輯：強制距離優先 + 讀取評論
+    async function performSearch(location, query) {
+        const { Place } = await google.maps.importLibrary("places");
+        const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
+
+        try {
+            const request = {
+                textQuery: query, 
+                // ⚠️ 增加 'reviews' 欄位以取得最新評論
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
+                // ⚠️ 強制使用 DISTANCE (距離) 排序
+                rankPreference: SearchByTextRankPreference.DISTANCE,
+                locationBias: { center: location }, 
+                maxResultCount: 20,
+                language: 'zh-TW',
+                isOpenNow: false // 設為 true 可只找營業中的，設為 false 找所有
+            };
+            
+            const { places } = await Place.searchByText(request);
+            
+            if (places && places.length > 0) {
+                displayResults(places, query);
+            } else {
+                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>No nearby places found.</p></div>';
+            }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#FF453A;"><p>API Error. Check Console.</p></div>';
         }
     }
 
-    function render(list) {
-        const div = document.getElementById('results');
-        div.innerHTML = '';
+    function displayResults(places, query) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = "";
         
-        // 過濾沒名字的，並只取前 15 筆
-        const places = list.filter(p => p.tags && p.tags.name).slice(0, 15);
-        
-        if(places.length === 0) {
-            div.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.5">附近沒有此類地點</p>';
-            return;
-        }
+        // 雖然 API 已按距離排序，但我們過濾掉完全沒評分的可能較好(看需求)
+        // 這裡直接顯示
+        places.forEach((place, index) => {
+            const name = place.displayName || "Unknown";
+            const rating = place.rating || 0;
+            const count = place.userRatingCount ? `(${place.userRatingCount})` : "(0)";
+            let address = place.formattedAddress || "";
+            address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
+            const isOpen = place.businessStatus === 'OPERATIONAL';
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
+            
+            // ⚠️ 評分邏輯與評論抓取
+            const isLowRating = rating > 0 && rating < 4.0;
+            let reviewHtml = "";
+            
+            // 抓取最新一則評論
+            if (place.reviews && place.reviews.length > 0) {
+                const latestReview = place.reviews[0]; // 通常 API 會給最相關或最新的
+                const reviewText = latestReview.text || "無文字評論";
+                
+                if (isLowRating) {
+                    // 低分警示樣式
+                    reviewHtml = `
+                        <div class="review-box bad">
+                            <span class="review-title" style="color:#FF453A">⚠️ 注意：評分偏低 (${rating})</span>
+                            <span class="review-text">最新評論：「${reviewText}」</span>
+                        </div>
+                    `;
+                } else {
+                    // 正常好評樣式
+                    reviewHtml = `
+                        <div class="review-box good">
+                            <span class="review-title" style="color:#32D74B">💬 最新相關評價</span>
+                            <span class="review-text">「${reviewText}」</span>
+                        </div>
+                    `;
+                }
+            } else {
+                // 沒有評論時
+                if (isLowRating) {
+                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:#FF453A">⚠️ 此地點評分低於 4.0，請留意。</span></div>`;
+                } else {
+                    reviewHtml = `<div class="review-box" style="border-left-color:#888"><span class="review-title">暫無文字評論</span></div>`;
+                }
+            }
 
-        places.forEach(p => {
-            const name = p.tags.name;
-            // Google 搜尋連結
-            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
-            // 導航連結
-            const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}`;
-
+            // 建立卡片
             const card = document.createElement('div');
             card.className = 'place-card';
+            card.style.animationDelay = `${index * 0.05}s`;
+            
+            const ratingClass = isLowRating ? 'rating-low' : 'rating-high';
+            
             card.innerHTML = `
-                <div class="place-name">${name}</div>
-                <div class="place-info">經緯度: ${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}</div>
-                <div class="btn-group">
-                    <a href="${navUrl}" target="_blank" class="action-btn btn-nav">🚀 導航</a>
-                    <a href="${searchUrl}" target="_blank" class="action-btn btn-review">🔍 查 Google 評價</a>
+                <div class="place-header">
+                    <div class="place-name">${name}</div>
+                    <div class="place-rating ${ratingClass}">
+                        ${rating > 0 ? '★ ' + rating : 'New'} 
+                        <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
+                    </div>
                 </div>
+                <div class="place-meta">
+                    <div>${isOpen ? '<span class="status-dot" style="background:#32D74B"></span>營業中' : '<span class="status-dot" style="background:#FF453A"></span>休息中'}</div>
+                    <div>• ${address}</div>
+                </div>
+                
+                ${reviewHtml}
+                
+                <a href="${mapUrl}" target="_blank" class="action-btn">
+                    NAVIGATE ➜
+                </a>
             `;
-            div.appendChild(card);
+            
+            resultsDiv.appendChild(card);
+            
+            // 地圖標記
+            const marker = new google.maps.Marker({
+                position: place.location, map: map, title: name,
+                label: { text: (index + 1).toString(), color: "black", fontWeight: "bold" }
+            });
+            marker.addListener("click", () => {
+                card.scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+            currentMarkers.push(marker);
         });
     }
 </script>
