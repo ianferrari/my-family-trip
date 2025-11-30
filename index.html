@@ -3,131 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS Pro - Neural</title>
+    <title>Travel OS - Open Source</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
     <style>
         :root {
-            --bg-dark: #000000;
-            --glass-panel: rgba(30, 30, 35, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --neon-accent: #0A84FF;
-            --neon-warn: #FF453A;
-            --neon-success: #32D74B;
+            --bg-dark: #050505;
+            --glass-panel: rgba(20, 20, 25, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --neon-accent: #00f3ff; /* 改為更有科技感的青色 */
+            --neon-warn: #ff0055;
+            --neon-success: #00ff9d;
             --text-primary: #FFFFFF;
-            --text-secondary: #9898A0;
-            --card-radius: 24px;
+            --text-secondary: #888888;
+            --card-radius: 20px;
         }
 
         body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background-color: var(--bg-dark); 
+            /* 背景改為網格，更有駭客感 */
             background-image: 
-                radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%),
-                radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
-            background-attachment: fixed;
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
             margin: 0; padding: 0; 
             color: var(--text-primary); 
-            -webkit-tap-highlight-color: transparent; 
             padding-bottom: 100px;
         }
         
         /* 🌀 Header */
         header { 
-            background: rgba(20, 20, 20, 0.6); 
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px);
+            background: rgba(10, 10, 10, 0.8); 
+            backdrop-filter: blur(15px);
             margin: 16px; padding: 16px 24px; 
-            border-radius: 40px; border: 1px solid var(--glass-border);
+            border-radius: 30px; border: 1px solid var(--glass-border);
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            position: sticky; top: 16px; z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: sticky; top: 16px; z-index: 1000; /* Leaflet 需要比較高的 z-index */
         }
-        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; background: linear-gradient(90deg, #fff, #8E8E93); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        header p { margin: 2px 0 0; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .header-dot { width: 8px; height: 8px; background: var(--neon-success); border-radius: 50%; box-shadow: 0 0 10px var(--neon-success); }
+        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        .header-dot { width: 8px; height: 8px; background: var(--neon-success); border-radius: 50%; box-shadow: 0 0 10px var(--neon-success); animation: pulse 2s infinite; }
         
         /* 🔘 Tabs */
         .main-tabs { 
             display: flex; margin: 10px 16px; 
-            background: rgba(40, 40, 45, 0.5); 
-            padding: 6px; border-radius: 32px; 
+            background: rgba(30, 30, 35, 0.6); 
+            padding: 5px; border-radius: 32px; 
             border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
         }
         .tab-btn { 
             flex: 1; border: none; background: transparent; color: var(--text-secondary); 
-            padding: 12px 0; border-radius: 26px; font-size: 13px; font-weight: 600; 
-            cursor: pointer; transition: all 0.4s; position: relative;
+            padding: 10px 0; border-radius: 26px; font-size: 13px; font-weight: 600; 
+            cursor: pointer; transition: all 0.3s;
         }
-        .tab-btn.active { background: rgba(60, 60, 65, 0.8); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .tab-btn.active { background: #333; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         
         /* 💊 Chips */
         .sub-nav-container { margin: 0; overflow: hidden; padding: 10px 0; }
-        .sub-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
+        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
 
         .chip-btn { 
-            border: 1px solid var(--glass-border); background: rgba(30,30,35, 0.4); color: #fff;
-            padding: 10px 20px; font-size: 13px; font-weight: 500; border-radius: 100px; 
-            white-space: nowrap; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border); background: rgba(30,30,35, 0.6); color: #ccc;
+            padding: 8px 18px; font-size: 12px; font-weight: 500; border-radius: 100px; 
+            white-space: nowrap; cursor: pointer; transition: all 0.2s;
         }
-        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
+        .chip-btn.active { background: var(--neon-accent); color: #000; border-color: var(--neon-accent); font-weight: 800; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); }
 
-        /* 🗺️ Map */
-        .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
-        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--glass-border); }
+        /* 🗺️ Map (Leaflet) */
+        .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; position: relative; z-index: 0; }
+        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); border: 1px solid var(--glass-border); filter: grayscale(20%) contrast(1.1); }
         
         /* 🃏 Cards */
         .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
         .place-card { 
-            background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
-            padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            background: var(--glass-panel); border: 1px solid var(--glass-border); 
+            border-radius: var(--card-radius); padding: 20px; margin-bottom: 16px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideIn 0.4s ease-out forwards;
+            position: relative; overflow: hidden;
         }
         
-        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .place-name { font-size: 19px; font-weight: 700; color: #fff; line-height: 1.3; width: 75%; }
-        
-        /* 評分標籤 */
-        .place-rating { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
-        .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); box-shadow: 0 0 10px rgba(50, 215, 75, 0.1); }
-        .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); box-shadow: 0 0 10px rgba(255, 69, 58, 0.1); border: 1px solid rgba(255, 69, 58, 0.3); }
-
-        .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-        
-        /* 💬 評論區塊 (新) */
-        .review-box { 
-            background: rgba(0,0,0,0.2); padding: 14px; border-radius: 16px; 
-            font-size: 13px; line-height: 1.5; color: #ddd; margin-bottom: 16px;
-            border-left: 3px solid;
+        /* 裝飾線條 */
+        .place-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--neon-accent); opacity: 0.5;
         }
-        .review-box.good { border-color: var(--neon-success); }
-        .review-box.bad { border-color: var(--neon-warn); background: rgba(255, 69, 58, 0.05); }
-        
-        .review-title { font-weight: 700; margin-bottom: 4px; display: block; font-size: 12px; opacity: 0.9; }
-        .review-text { font-style: italic; opacity: 0.8; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
+        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .place-name { font-size: 18px; font-weight: 700; color: #fff; width: 70%; line-height: 1.4; }
+        
+        .tag-badge { 
+            padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; 
+            background: rgba(255,255,255,0.1); color: var(--neon-accent); border: 1px solid rgba(0, 243, 255, 0.2);
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
+        
         .action-btn {
             display: block; width: 100%; text-align: center; 
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; padding: 12px 0; border-radius: 16px;
+            color: #fff; padding: 12px 0; border-radius: 12px;
             font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
         }
-        .action-btn:hover { background: var(--neon-accent); border-color: var(--neon-accent); }
+        .action-btn:hover { background: var(--neon-accent); color: #000; border-color: var(--neon-accent); }
 
-        #status { text-align: center; margin: 10px 0; font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .gm-style-cc { display: none !important; }
+        #status { text-align: center; margin: 10px 0; font-size: 10px; color: var(--neon-success); letter-spacing: 2px; text-transform: uppercase; }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); } }
+        
+        /* 隱藏 Leaflet 版權標示以保持介面乾淨 (可選) */
+        .leaflet-control-attribution { font-size: 9px !important; opacity: 0.5; background: transparent !important; color: #666 !important; }
     </style>
 </head>
 <body>
 
 <header>
     <div>
-        <h1>Travel OS <span style="font-weight:300; opacity:0.7">Neural</span></h1>
-        <p>Proximity & Review System</p>
+        <h1>OSM <span style="font-weight:300; opacity:0.7">Scanner</span></h1>
+        <p style="margin:2px 0 0; font-size:10px; color:#666;">FREE / OPEN SOURCE / NO-LIMIT</p>
     </div>
     <div class="header-dot"></div>
 </header>
@@ -136,71 +134,73 @@
     <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
     <button class="tab-btn" onclick="selectCategory('food')">美食</button>
     <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
-    <button class="tab-btn" onclick="selectCategory('life')">便利</button>
+    <button class="tab-btn" onclick="selectCategory('life')">生活</button>
 </div>
 
 <div class="sub-nav-container">
     <div class="sub-scroll-wrapper" id="sub-nav"></div>
 </div>
 
-<div id="status">SYSTEM READY</div>
+<div id="status">SYSTEM ONLINE</div>
 
 <div class="map-wrapper">
     <div id="map"></div>
 </div>
 
 <div class="results-container" id="results">
-    <div style="text-align: center; margin-top: 60px; opacity: 0.5;">
-        <h3 style="font-weight:300; letter-spacing:1px;">AWAITING INPUT</h3>
-        <p style="font-size:12px;">Select a category to scan nearby locations</p>
+    <div style="text-align: center; margin-top: 40px; opacity: 0.4;">
+        <p>INITIATE SCAN...</p>
     </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
+    // 🛠️ 這裡不使用 Google API，改用 Leaflet + Overpass API
     let map;
-    let userLocation = null;
-    let currentMarkers = [];
-    let currentCircle = null;
+    let userMarker;
+    let placeMarkers = [];
+    let userLat = 25.0330; // 預設台北 (會被 GPS 覆蓋)
+    let userLng = 121.5654;
 
-    // 🌟 修正後的分類：關鍵字更廣泛，確保搜尋到「附近」的小點
+    // 🗺️ 定義搜尋標籤 (Mapping 到 OSM 的 tags)
+    // 這裡是關鍵：將您的中文需求轉換為 OpenStreetMap 的機器語言
     const CATEGORIES = {
         'fun': [
-            { name: "附近公園", query: "公園", icon: "🛝" }, 
-            { name: "百貨購物", query: "百貨公司 購物中心", icon: "🛍️" },
-            { name: "室內遊樂", query: "室內遊樂園 親子館 遊戲場", icon: "🧩" },
-            { name: "景點", query: "觀光景點", icon: "📸" },
-            { name: "書店圖館", query: "書店 圖書館", icon: "📚" }
+            { name: "公園綠地", osm_tag: 'leisure=park', icon: "🌳" },
+            { name: "遊樂場", osm_tag: 'leisure=playground', icon: "🛝" },
+            { name: "博物館", osm_tag: 'tourism=museum', icon: "🏛️" },
+            { name: "景點", osm_tag: 'tourism=attraction', icon: "📸" },
+            { name: "圖書館", osm_tag: 'amenity=library', icon: "📚" }
         ],
         'food': [
-            { name: "親子餐廳", query: "親子餐廳", icon: "👶" },
-            { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "🍰" },
-            { name: "在地小吃", query: "小吃 麵店 便當", icon: "🍜" },
-            { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" },
-            { name: "早午餐", query: "早午餐", icon: "🥪" }
+            { name: "餐廳", osm_tag: 'amenity=restaurant', icon: "🍴" },
+            { name: "咖啡廳", osm_tag: 'amenity=cafe', icon: "☕" },
+            { name: "速食", osm_tag: 'amenity=fast_food', icon: "🍔" },
+            { name: "酒吧", osm_tag: 'amenity=bar', icon: "🍸" }
         ],
         'medical': [
-            // 關鍵字包含一般診所、內科、家醫科
-            { name: "一般診所", query: "診所 家醫科 內科 耳鼻喉科", icon: "🩺" },
-            { name: "小兒科", query: "小兒科", icon: "👶" },
-            { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
-            { name: "藥局", query: "藥局", icon: "💊" }
+            { name: "診所", osm_tag: 'amenity=clinic', icon: "🩺" },
+            { name: "醫院", osm_tag: 'amenity=hospital', icon: "🏥" },
+            { name: "藥局", osm_tag: 'amenity=pharmacy', icon: "💊" },
+            { name: "牙醫", osm_tag: 'amenity=dentist', icon: "🦷" }
         ],
         'life': [
-            // 關鍵字包含魚中魚等賣場
-            { name: "動物水族", query: "寵物店 水族館 魚中魚", icon: "🐠" },
-            { name: "便利超商", query: "便利商店 7-11 全家", icon: "🏪" },
-            { name: "停車場", query: "停車場", icon: "🅿️" },
-            { name: "加油站", query: "加油站", icon: "⛽" }
+            { name: "便利商店", osm_tag: 'shop=convenience', icon: "🏪" },
+            { name: "超市", osm_tag: 'shop=supermarket', icon: "🛒" },
+            { name: "加油站", osm_tag: 'amenity=fuel', icon: "⛽" },
+            { name: "停車場", osm_tag: 'amenity=parking', icon: "🅿️" },
+            { name: "銀行", osm_tag: 'amenity=bank', icon: "💰" }
         ]
     };
 
-    let currentCategory = 'fun';
-    window.onload = () => { renderSubNav('fun'); };
+    window.onload = () => { 
+        initMap(); 
+        renderSubNav('fun'); 
+        getLocation(); // 啟動時抓取位置
+    };
 
     function selectCategory(cat) {
-        currentCategory = cat;
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         event.currentTarget.classList.add('active');
         renderSubNav(cat);
@@ -209,197 +209,179 @@
     function renderSubNav(cat) {
         const container = document.getElementById('sub-nav');
         container.innerHTML = '';
-        const options = CATEGORIES[cat];
-        options.forEach((opt) => {
+        CATEGORIES[cat].forEach((opt) => {
             const btn = document.createElement('button');
             btn.className = 'chip-btn';
             btn.innerHTML = `${opt.icon} ${opt.name}`;
-            btn.onclick = () => startSearch(opt.query, btn);
+            btn.onclick = () => startOverpassSearch(opt.osm_tag, btn);
             container.appendChild(btn);
         });
     }
 
-    function startSearch(query, btnElement) {
+    // 1️⃣ 初始化 Leaflet 地圖 (使用免費的 CartoDB Dark Matter 圖層)
+    function initMap() {
+        map = L.map('map', { zoomControl: false }).setView([userLat, userLng], 15);
+        
+        // 使用 CartoDB 的暗色系圖磚 (很有質感且免費)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+    }
+
+    // 2️⃣ 獲取 GPS
+    function getLocation() {
+        if (navigator.geolocation) {
+            document.getElementById('status').innerText = "ACQUIRING GPS SIGNAL...";
+            navigator.geolocation.getCurrentPosition(position => {
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
+                
+                // 更新地圖中心
+                map.setView([userLat, userLng], 16);
+                
+                // 繪製使用者位置 (藍色脈衝點)
+                if(userMarker) map.removeLayer(userMarker);
+                
+                const pulseIcon = L.divIcon({
+                    className: 'user-pulse',
+                    html: '<div style="width:12px;height:12px;background:#00f3ff;border-radius:50%;box-shadow:0 0 15px #00f3ff;border:2px solid #fff;"></div>',
+                    iconSize: [16, 16]
+                });
+                
+                userMarker = L.marker([userLat, userLng], {icon: pulseIcon}).addTo(map);
+                document.getElementById('status').innerText = "GPS LOCKED - READY";
+            }, () => {
+                document.getElementById('status').innerText = "GPS ERROR - USING DEFAULT";
+            });
+        }
+    }
+
+    // 3️⃣ 核心：使用 Overpass API 進行免費搜尋
+    async function startOverpassSearch(osmTag, btnElement) {
+        // UI 更新
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
-        
         const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = "📡 SCANNING NEARBY...";
-        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#666;"><p>Triangulating data...</p></div>';
-        clearMarkers();
+        const resultsDiv = document.getElementById('results');
+        
+        statusDiv.innerText = "QUERYING SATELLITE DATA...";
+        resultsDiv.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">Scanning sector...</div>';
+        
+        // 清除舊標記
+        placeMarkers.forEach(m => map.removeLayer(m));
+        placeMarkers = [];
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    statusDiv.innerHTML = `TARGET: ${query}`;
-                    await initMap(userLocation.lat, userLocation.lng);
-                    await performSearch(userLocation, query);
-                    statusDiv.innerHTML = "SCAN COMPLETE";
-                },
-                (error) => {
-                    statusDiv.innerHTML = "GPS ERROR";
-                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:#FF453A;"><h3>Location Required</h3><p>Please enable GPS to find nearby places.</p></div>';
-                }
+        // 建構 Overpass QL 查詢語法
+        // 搜尋半徑 1500 公尺內的節點(node)與路徑(way)
+        const radius = 1500;
+        const [key, value] = osmTag.split('=');
+        
+        // 這是向 OSM 伺服器發送的指令
+        const query = `
+            [out:json][timeout:25];
+            (
+              node["${key}"="${value}"](around:${radius},${userLat},${userLng});
+              way["${key}"="${value}"](around:${radius},${userLat},${userLng});
             );
-        } else { statusDiv.innerHTML = "SYSTEM ERROR"; }
-    }
-
-    async function initMap(lat, lng) {
-        const { Map } = await google.maps.importLibrary("maps");
-        const center = { lat: lat, lng: lng };
-        const darkMapStyle = [
-            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
-        ];
-
-        if (!map) {
-            map = new Map(document.getElementById("map"), {
-                center: center, zoom: 15, mapId: "DEMO_MAP_ID", 
-                disableDefaultUI: true, gestureHandling: "greedy", styles: darkMapStyle
-            });
-        } else {
-            map.setCenter(center); map.setZoom(15); map.setOptions({ styles: darkMapStyle });
-        }
-
-        if (currentCircle) currentCircle.setMap(null);
-        currentCircle = new google.maps.Marker({
-            position: center, map: map,
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#0A84FF", fillOpacity: 1, strokeWeight: 4, strokeColor: "rgba(10, 132, 255, 0.3)" },
-            zIndex: 999 
-        });
-    }
-
-    function clearMarkers() {
-        currentMarkers.forEach(marker => marker.setMap(null));
-        currentMarkers = [];
-    }
-
-    // 🌟 核心搜尋邏輯：強制距離優先 + 讀取評論
-    async function performSearch(location, query) {
-        const { Place } = await google.maps.importLibrary("places");
-        const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
+            out body;
+            >;
+            out skel qt;
+        `;
 
         try {
-            const request = {
-                textQuery: query, 
-                // ⚠️ 增加 'reviews' 欄位以取得最新評論
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
-                // ⚠️ 強制使用 DISTANCE (距離) 排序
-                rankPreference: SearchByTextRankPreference.DISTANCE,
-                locationBias: { center: location }, 
-                maxResultCount: 20,
-                language: 'zh-TW',
-                isOpenNow: false // 設為 true 可只找營業中的，設為 false 找所有
-            };
+            // 發送請求到 Overpass API (完全免費的公開接口)
+            const response = await fetch('https://overpass-api.de/api/interpreter', {
+                method: 'POST',
+                body: query
+            });
+            const data = await response.json();
             
-            const { places } = await Place.searchByText(request);
-            
-            if (places && places.length > 0) {
-                displayResults(places, query);
-            } else {
-                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>No nearby places found.</p></div>';
-            }
-        } catch (e) {
-            console.error(e);
-            document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#FF453A;"><p>API Error. Check Console.</p></div>';
+            displayOverpassResults(data.elements, key, value);
+            statusDiv.innerText = "DATA RECEIVED";
+
+        } catch (error) {
+            console.error(error);
+            resultsDiv.innerHTML = '<div style="text-align:center; color:#ff0055;">CONNECTION LOST<br>Try again later</div>';
+            statusDiv.innerText = "NETWORK ERROR";
         }
     }
 
-    function displayResults(places, query) {
+    // 4️⃣ 顯示結果
+    function displayOverpassResults(elements, searchKey, searchValue) {
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = "";
-        
-        // 雖然 API 已按距離排序，但我們過濾掉完全沒評分的可能較好(看需求)
-        // 這裡直接顯示
-        places.forEach((place, index) => {
-            const name = place.displayName || "Unknown";
-            const rating = place.rating || 0;
-            const count = place.userRatingCount ? `(${place.userRatingCount})` : "(0)";
-            let address = place.formattedAddress || "";
-            address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
-            const isOpen = place.businessStatus === 'OPERATIONAL';
-            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
-            
-            // ⚠️ 評分邏輯與評論抓取
-            const isLowRating = rating > 0 && rating < 4.0;
-            let reviewHtml = "";
-            
-            // 抓取最新一則評論
-            if (place.reviews && place.reviews.length > 0) {
-                const latestReview = place.reviews[0]; // 通常 API 會給最相關或最新的
-                const reviewText = latestReview.text || "無文字評論";
-                
-                if (isLowRating) {
-                    // 低分警示樣式
-                    reviewHtml = `
-                        <div class="review-box bad">
-                            <span class="review-title" style="color:#FF453A">⚠️ 注意：評分偏低 (${rating})</span>
-                            <span class="review-text">最新評論：「${reviewText}」</span>
-                        </div>
-                    `;
-                } else {
-                    // 正常好評樣式
-                    reviewHtml = `
-                        <div class="review-box good">
-                            <span class="review-title" style="color:#32D74B">💬 最新相關評價</span>
-                            <span class="review-text">「${reviewText}」</span>
-                        </div>
-                    `;
-                }
-            } else {
-                // 沒有評論時
-                if (isLowRating) {
-                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:#FF453A">⚠️ 此地點評分低於 4.0，請留意。</span></div>`;
-                } else {
-                    reviewHtml = `<div class="review-box" style="border-left-color:#888"><span class="review-title">暫無文字評論</span></div>`;
-                }
-            }
 
-            // 建立卡片
+        // 過濾掉沒有名字的地點 (很多 OSM 資料只有座標沒名字)
+        // 並只取 node (點) 或 way (建築物中心)
+        const validPlaces = elements.filter(el => el.tags && el.tags.name);
+        
+        if (validPlaces.length === 0) {
+            resultsDiv.innerHTML = '<div style="text-align:center; padding:40px; opacity:0.5;">NO TARGETS FOUND IN SECTOR</div>';
+            return;
+        }
+
+        // 計算距離並排序
+        validPlaces.forEach(place => {
+            // 如果是 way (建築物)，通常沒有直接座標，這裡簡化處理，若無 lat/lon 則忽略或需計算中心點
+            // 為求簡單，我們盡量取有 lat/lon 的資料 (Overpass 的 center 功能需要更複雜查詢，這裡先做簡易版)
+            if (!place.lat && !place.lon) return; 
+            
+            place.distance = getDistanceFromLatLonInKm(userLat, userLng, place.lat, place.lon);
+        });
+
+        // 按距離排序
+        validPlaces.sort((a, b) => a.distance - b.distance);
+
+        validPlaces.forEach((place, index) => {
+            if (index > 20) return; // 只顯示最近 20 筆
+
+            // 產生 Google Maps 導航連結
+            const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
+            
             const card = document.createElement('div');
             card.className = 'place-card';
             card.style.animationDelay = `${index * 0.05}s`;
             
-            const ratingClass = isLowRating ? 'rating-low' : 'rating-high';
+            // 由於沒有評分，我們顯示「距離」和「類型」
+            const distDisplay = place.distance < 1 ? `${(place.distance * 1000).toFixed(0)} m` : `${place.distance.toFixed(1)} km`;
             
             card.innerHTML = `
                 <div class="place-header">
-                    <div class="place-name">${name}</div>
-                    <div class="place-rating ${ratingClass}">
-                        ${rating > 0 ? '★ ' + rating : 'New'} 
-                        <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
-                    </div>
+                    <div class="place-name">${place.tags.name}</div>
+                    <div class="tag-badge">📍 ${distDisplay}</div>
                 </div>
                 <div class="place-meta">
-                    <div>${isOpen ? '<span class="status-dot" style="background:#32D74B"></span>營業中' : '<span class="status-dot" style="background:#FF453A"></span>休息中'}</div>
-                    <div>• ${address}</div>
+                    <div>Type: ${place.tags[searchKey] || searchValue}</div>
+                    <div style="opacity:0.6; font-size:10px; margin-top:4px;">COORD: ${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}</div>
                 </div>
-                
-                ${reviewHtml}
-                
-                <a href="${mapUrl}" target="_blank" class="action-btn">
-                    NAVIGATE ➜
+                <a href="${navUrl}" target="_blank" class="action-btn">
+                    INITIATE NAVIGATION ➜
                 </a>
             `;
-            
             resultsDiv.appendChild(card);
-            
+
             // 地圖標記
-            const marker = new google.maps.Marker({
-                position: place.location, map: map, title: name,
-                label: { text: (index + 1).toString(), color: "black", fontWeight: "bold" }
-            });
-            marker.addListener("click", () => {
-                card.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
-            currentMarkers.push(marker);
+            const marker = L.marker([place.lat, place.lon]).addTo(map)
+                .bindPopup(`<b>${place.tags.name}</b><br>${distDisplay}`);
+            placeMarkers.push(marker);
         });
     }
+
+    // 輔助：計算距離 (Haversine 公式)
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+        var R = 6371; 
+        var dLat = deg2rad(lat2-lat1);  
+        var dLon = deg2rad(lon2-lon1); 
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var d = R * c; 
+        return d;
+    }
+    function deg2rad(deg) { return deg * (Math.PI/180); }
+
 </script>
 </body>
 </html>
