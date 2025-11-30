@@ -3,385 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS - Open Source</title>
+    <title>Travel OS - Free V2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         :root {
             --bg-dark: #050505;
-            --glass-panel: rgba(20, 20, 25, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --neon-accent: #00f3ff; /* 改為更有科技感的青色 */
+            --glass-panel: rgba(20, 20, 25, 0.9);
+            --neon-accent: #00f3ff;
             --neon-warn: #ff0055;
-            --neon-success: #00ff9d;
-            --text-primary: #FFFFFF;
-            --text-secondary: #888888;
             --card-radius: 20px;
         }
 
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg-dark); 
-            /* 背景改為網格，更有駭客感 */
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-image: radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
             margin: 0; padding: 0; 
-            color: var(--text-primary); 
+            color: #fff; 
             padding-bottom: 100px;
         }
         
-        /* 🌀 Header */
+        /* 介面樣式 */
         header { 
-            background: rgba(10, 10, 10, 0.8); 
-            backdrop-filter: blur(15px);
-            margin: 16px; padding: 16px 24px; 
-            border-radius: 30px; border: 1px solid var(--glass-border);
+            background: rgba(20,20,20,0.8); backdrop-filter: blur(10px);
+            margin: 16px; padding: 16px 24px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            position: sticky; top: 16px; z-index: 1000; /* Leaflet 需要比較高的 z-index */
         }
-        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-        .header-dot { width: 8px; height: 8px; background: var(--neon-success); border-radius: 50%; box-shadow: 0 0 10px var(--neon-success); animation: pulse 2s infinite; }
         
-        /* 🔘 Tabs */
-        .main-tabs { 
-            display: flex; margin: 10px 16px; 
-            background: rgba(30, 30, 35, 0.6); 
-            padding: 5px; border-radius: 32px; 
-            border: 1px solid var(--glass-border);
-        }
+        .main-tabs { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 10px; }
         .tab-btn { 
-            flex: 1; border: none; background: transparent; color: var(--text-secondary); 
-            padding: 10px 0; border-radius: 26px; font-size: 13px; font-weight: 600; 
-            cursor: pointer; transition: all 0.3s;
+            flex: 1; background: #222; border: 1px solid #333; color: #888; 
+            padding: 10px 0; border-radius: 12px; font-size: 13px; font-weight: 600;
         }
-        .tab-btn.active { background: #333; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-        
-        /* 💊 Chips */
-        .sub-nav-container { margin: 0; overflow: hidden; padding: 10px 0; }
-        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
-        .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
+        .tab-btn.active { background: #333; color: #fff; border-color: #555; }
 
+        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding: 10px 16px; }
         .chip-btn { 
-            border: 1px solid var(--glass-border); background: rgba(30,30,35, 0.6); color: #ccc;
-            padding: 8px 18px; font-size: 12px; font-weight: 500; border-radius: 100px; 
-            white-space: nowrap; cursor: pointer; transition: all 0.2s;
+            background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.3); color: var(--neon-accent);
+            padding: 8px 16px; border-radius: 100px; white-space: nowrap; font-size: 12px;
         }
-        .chip-btn.active { background: var(--neon-accent); color: #000; border-color: var(--neon-accent); font-weight: 800; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4); }
+        .chip-btn.active { background: var(--neon-accent); color: #000; font-weight: bold; }
 
-        /* 🗺️ Map (Leaflet) */
-        .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; position: relative; z-index: 0; }
-        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); border: 1px solid var(--glass-border); filter: grayscale(20%) contrast(1.1); }
-        
-        /* 🃏 Cards */
-        .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+        #map { height: 35vh; margin: 0 16px; border-radius: 20px; border: 1px solid #333; filter: grayscale(100%) invert(100%) contrast(0.9); }
+        /* 反轉顏色讓原本白色的地圖變成黑色風格，解決讀取問題 */
+
         .place-card { 
-            background: var(--glass-panel); border: 1px solid var(--glass-border); 
-            border-radius: var(--card-radius); padding: 20px; margin-bottom: 16px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            animation: slideIn 0.4s ease-out forwards;
-            position: relative; overflow: hidden;
+            background: #111; border: 1px solid #333; border-radius: 16px; 
+            padding: 16px; margin: 16px; position: relative;
         }
-        
-        /* 裝飾線條 */
-        .place-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-            background: var(--neon-accent); opacity: 0.5;
-        }
+        .place-name { font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #fff; }
+        .place-info { font-size: 12px; color: #888; margin-bottom: 12px; }
 
-        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .place-name { font-size: 18px; font-weight: 700; color: #fff; width: 70%; line-height: 1.4; }
-        
-        .tag-badge { 
-            padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; 
-            background: rgba(255,255,255,0.1); color: var(--neon-accent); border: 1px solid rgba(0, 243, 255, 0.2);
-            display: flex; align-items: center; gap: 4px;
-        }
-
-        .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-direction: column; gap: 4px; }
-        
+        .btn-group { display: flex; gap: 10px; }
         .action-btn {
-            display: block; width: 100%; text-align: center; 
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; padding: 12px 0; border-radius: 12px;
-            font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
+            flex: 1; text-align: center; padding: 10px; border-radius: 8px;
+            font-size: 12px; font-weight: bold; text-decoration: none;
         }
-        .action-btn:hover { background: var(--neon-accent); color: #000; border-color: var(--neon-accent); }
+        .btn-nav { background: var(--neon-accent); color: #000; }
+        .btn-review { background: #333; color: #fff; border: 1px solid #555; }
 
-        #status { text-align: center; margin: 10px 0; font-size: 10px; color: var(--neon-success); letter-spacing: 2px; text-transform: uppercase; }
-        
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); } }
-        
-        /* 隱藏 Leaflet 版權標示以保持介面乾淨 (可選) */
-        .leaflet-control-attribution { font-size: 9px !important; opacity: 0.5; background: transparent !important; color: #666 !important; }
+        #status { text-align: center; font-size: 12px; color: #666; margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>OSM <span style="font-weight:300; opacity:0.7">Scanner</span></h1>
-        <p style="margin:2px 0 0; font-size:10px; color:#666;">FREE / OPEN SOURCE / NO-LIMIT</p>
-    </div>
-    <div class="header-dot"></div>
+    <h3>OSM Scanner <span style="font-size:10px; opacity:0.5">V2.0</span></h3>
+    <div style="width:8px; height:8px; background:#0f0; border-radius:50%;"></div>
 </header>
 
 <div class="main-tabs">
-    <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
-    <button class="tab-btn" onclick="selectCategory('food')">美食</button>
-    <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
-    <button class="tab-btn" onclick="selectCategory('life')">生活</button>
+    <button class="tab-btn active" onclick="setCat('fun')">玩樂</button>
+    <button class="tab-btn" onclick="setCat('food')">美食</button>
+    <button class="tab-btn" onclick="setCat('medical')">醫療</button>
 </div>
 
-<div class="sub-nav-container">
-    <div class="sub-scroll-wrapper" id="sub-nav"></div>
-</div>
+<div class="sub-scroll-wrapper" id="sub-nav"></div>
 
-<div id="status">SYSTEM ONLINE</div>
+<div id="status">READY</div>
+<div id="map"></div>
+<div id="results"></div>
 
-<div class="map-wrapper">
-    <div id="map"></div>
-</div>
-
-<div class="results-container" id="results">
-    <div style="text-align: center; margin-top: 40px; opacity: 0.4;">
-        <p>INITIATE SCAN...</p>
-    </div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // 🛠️ 這裡不使用 Google API，改用 Leaflet + Overpass API
-    let map;
-    let userMarker;
-    let placeMarkers = [];
-    let userLat = 25.0330; // 預設台北 (會被 GPS 覆蓋)
-    let userLng = 121.5654;
+    let map, userMarker, userLat, userLng;
+    // 備用伺服器列表，如果第一個掛了會試第二個
+    const API_SERVERS = [
+        'https://overpass-api.de/api/interpreter',
+        'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter'
+    ];
 
-    // 🗺️ 定義搜尋標籤 (Mapping 到 OSM 的 tags)
-    // 這裡是關鍵：將您的中文需求轉換為 OpenStreetMap 的機器語言
-    const CATEGORIES = {
+    const CATS = {
         'fun': [
-            { name: "公園綠地", osm_tag: 'leisure=park', icon: "🌳" },
-            { name: "遊樂場", osm_tag: 'leisure=playground', icon: "🛝" },
-            { name: "博物館", osm_tag: 'tourism=museum', icon: "🏛️" },
-            { name: "景點", osm_tag: 'tourism=attraction', icon: "📸" },
-            { name: "圖書館", osm_tag: 'amenity=library', icon: "📚" }
+            {n:"公園", q:'leisure=park'}, {n:"百貨", q:'shop=department_store'}, 
+            {n:"景點", q:'tourism=attraction'}
         ],
         'food': [
-            { name: "餐廳", osm_tag: 'amenity=restaurant', icon: "🍴" },
-            { name: "咖啡廳", osm_tag: 'amenity=cafe', icon: "☕" },
-            { name: "速食", osm_tag: 'amenity=fast_food', icon: "🍔" },
-            { name: "酒吧", osm_tag: 'amenity=bar', icon: "🍸" }
+            {n:"餐廳", q:'amenity=restaurant'}, {n:"咖啡", q:'amenity=cafe'}, 
+            {n:"速食", q:'amenity=fast_food'}
         ],
         'medical': [
-            { name: "診所", osm_tag: 'amenity=clinic', icon: "🩺" },
-            { name: "醫院", osm_tag: 'amenity=hospital', icon: "🏥" },
-            { name: "藥局", osm_tag: 'amenity=pharmacy', icon: "💊" },
-            { name: "牙醫", osm_tag: 'amenity=dentist', icon: "🦷" }
-        ],
-        'life': [
-            { name: "便利商店", osm_tag: 'shop=convenience', icon: "🏪" },
-            { name: "超市", osm_tag: 'shop=supermarket', icon: "🛒" },
-            { name: "加油站", osm_tag: 'amenity=fuel', icon: "⛽" },
-            { name: "停車場", osm_tag: 'amenity=parking', icon: "🅿️" },
-            { name: "銀行", osm_tag: 'amenity=bank', icon: "💰" }
+            {n:"醫院", q:'amenity=hospital'}, {n:"診所", q:'amenity=clinic'}, 
+            {n:"藥局", q:'amenity=pharmacy'}
         ]
     };
 
-    window.onload = () => { 
-        initMap(); 
-        renderSubNav('fun'); 
-        getLocation(); // 啟動時抓取位置
+    window.onload = () => {
+        // 初始化地圖 (先用預設台北，等GPS)
+        map = L.map('map').setView([25.033, 121.565], 15);
+        // 使用最標準的 OSM 圖層，但透過 CSS濾鏡把它變黑，這樣最穩定
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(map);
+        
+        setCat('fun');
+        
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
+                map.setView([userLat, userLng], 16);
+                L.marker([userLat, userLng]).addTo(map).bindPopup("You are here").openPopup();
+                document.getElementById('status').innerText = "GPS LOCKED";
+            }, err => {
+                document.getElementById('status').innerText = "GPS FAILED: " + err.message;
+            });
+        }
     };
 
-    function selectCategory(cat) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        renderSubNav(cat);
-    }
-
-    function renderSubNav(cat) {
-        const container = document.getElementById('sub-nav');
-        container.innerHTML = '';
-        CATEGORIES[cat].forEach((opt) => {
-            const btn = document.createElement('button');
-            btn.className = 'chip-btn';
-            btn.innerHTML = `${opt.icon} ${opt.name}`;
-            btn.onclick = () => startOverpassSearch(opt.osm_tag, btn);
-            container.appendChild(btn);
+    function setCat(key) {
+        const div = document.getElementById('sub-nav');
+        div.innerHTML = '';
+        CATS[key].forEach(c => {
+            const b = document.createElement('button');
+            b.className = 'chip-btn';
+            b.innerText = c.n;
+            b.onclick = () => search(c.q, b);
+            div.appendChild(b);
         });
     }
 
-    // 1️⃣ 初始化 Leaflet 地圖 (使用免費的 CartoDB Dark Matter 圖層)
-    function initMap() {
-        map = L.map('map', { zoomControl: false }).setView([userLat, userLng], 15);
+    async function search(queryStr, btn) {
+        if(!userLat) { alert("等待 GPS 定位中..."); return; }
         
-        // 使用 CartoDB 的暗色系圖磚 (很有質感且免費)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
-    }
-
-    // 2️⃣ 獲取 GPS
-    function getLocation() {
-        if (navigator.geolocation) {
-            document.getElementById('status').innerText = "ACQUIRING GPS SIGNAL...";
-            navigator.geolocation.getCurrentPosition(position => {
-                userLat = position.coords.latitude;
-                userLng = position.coords.longitude;
-                
-                // 更新地圖中心
-                map.setView([userLat, userLng], 16);
-                
-                // 繪製使用者位置 (藍色脈衝點)
-                if(userMarker) map.removeLayer(userMarker);
-                
-                const pulseIcon = L.divIcon({
-                    className: 'user-pulse',
-                    html: '<div style="width:12px;height:12px;background:#00f3ff;border-radius:50%;box-shadow:0 0 15px #00f3ff;border:2px solid #fff;"></div>',
-                    iconSize: [16, 16]
-                });
-                
-                userMarker = L.marker([userLat, userLng], {icon: pulseIcon}).addTo(map);
-                document.getElementById('status').innerText = "GPS LOCKED - READY";
-            }, () => {
-                document.getElementById('status').innerText = "GPS ERROR - USING DEFAULT";
-            });
-        }
-    }
-
-    // 3️⃣ 核心：使用 Overpass API 進行免費搜尋
-    async function startOverpassSearch(osmTag, btnElement) {
-        // UI 更新
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
-        const statusDiv = document.getElementById('status');
-        const resultsDiv = document.getElementById('results');
-        
-        statusDiv.innerText = "QUERYING SATELLITE DATA...";
-        resultsDiv.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">Scanning sector...</div>';
-        
-        // 清除舊標記
-        placeMarkers.forEach(m => map.removeLayer(m));
-        placeMarkers = [];
+        btn.classList.add('active');
+        document.getElementById('status').innerText = "SCANNING...";
+        document.getElementById('results').innerHTML = '<p style="text-align:center; padding:20px; color:#666">連線中...</p>';
 
-        // 建構 Overpass QL 查詢語法
-        // 搜尋半徑 1500 公尺內的節點(node)與路徑(way)
-        const radius = 1500;
-        const [key, value] = osmTag.split('=');
-        
-        // 這是向 OSM 伺服器發送的指令
-        const query = `
-            [out:json][timeout:25];
-            (
-              node["${key}"="${value}"](around:${radius},${userLat},${userLng});
-              way["${key}"="${value}"](around:${radius},${userLat},${userLng});
-            );
-            out body;
-            >;
-            out skel qt;
-        `;
+        const [k, v] = queryStr.split('=');
+        // 搜尋半徑 1000 公尺
+        const ql = `[out:json][timeout:10];(node["${k}"="${v}"](around:1000,${userLat},${userLng}););out;`;
 
-        try {
-            // 發送請求到 Overpass API (完全免費的公開接口)
-            const response = await fetch('https://overpass-api.de/api/interpreter', {
-                method: 'POST',
-                body: query
-            });
-            const data = await response.json();
-            
-            displayOverpassResults(data.elements, key, value);
-            statusDiv.innerText = "DATA RECEIVED";
+        // 嘗試輪流使用伺服器
+        let success = false;
+        for (let server of API_SERVERS) {
+            try {
+                console.log("Trying server:", server);
+                const res = await fetch(server, { method: 'POST', body: ql });
+                if (!res.ok) throw new Error("Server blocked");
+                const data = await res.json();
+                render(data.elements);
+                document.getElementById('status').innerText = "FOUND " + data.elements.length + " PLACES";
+                success = true;
+                break; // 成功就跳出迴圈
+            } catch (e) {
+                console.warn("Server failed, trying next...", e);
+            }
+        }
 
-        } catch (error) {
-            console.error(error);
-            resultsDiv.innerHTML = '<div style="text-align:center; color:#ff0055;">CONNECTION LOST<br>Try again later</div>';
-            statusDiv.innerText = "NETWORK ERROR";
+        if (!success) {
+            document.getElementById('status').innerText = "ALL SERVERS BUSY";
+            document.getElementById('results').innerHTML = '<p style="text-align:center; color:#ff0055">伺服器忙碌中，請稍後再試</p>';
         }
     }
 
-    // 4️⃣ 顯示結果
-    function displayOverpassResults(elements, searchKey, searchValue) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = "";
-
-        // 過濾掉沒有名字的地點 (很多 OSM 資料只有座標沒名字)
-        // 並只取 node (點) 或 way (建築物中心)
-        const validPlaces = elements.filter(el => el.tags && el.tags.name);
+    function render(list) {
+        const div = document.getElementById('results');
+        div.innerHTML = '';
         
-        if (validPlaces.length === 0) {
-            resultsDiv.innerHTML = '<div style="text-align:center; padding:40px; opacity:0.5;">NO TARGETS FOUND IN SECTOR</div>';
+        // 過濾沒名字的，並只取前 15 筆
+        const places = list.filter(p => p.tags && p.tags.name).slice(0, 15);
+        
+        if(places.length === 0) {
+            div.innerHTML = '<p style="text-align:center; padding:20px; opacity:0.5">附近沒有此類地點</p>';
             return;
         }
 
-        // 計算距離並排序
-        validPlaces.forEach(place => {
-            // 如果是 way (建築物)，通常沒有直接座標，這裡簡化處理，若無 lat/lon 則忽略或需計算中心點
-            // 為求簡單，我們盡量取有 lat/lon 的資料 (Overpass 的 center 功能需要更複雜查詢，這裡先做簡易版)
-            if (!place.lat && !place.lon) return; 
-            
-            place.distance = getDistanceFromLatLonInKm(userLat, userLng, place.lat, place.lon);
-        });
+        places.forEach(p => {
+            const name = p.tags.name;
+            // Google 搜尋連結
+            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+            // 導航連結
+            const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lon}`;
 
-        // 按距離排序
-        validPlaces.sort((a, b) => a.distance - b.distance);
-
-        validPlaces.forEach((place, index) => {
-            if (index > 20) return; // 只顯示最近 20 筆
-
-            // 產生 Google Maps 導航連結
-            const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
-            
             const card = document.createElement('div');
             card.className = 'place-card';
-            card.style.animationDelay = `${index * 0.05}s`;
-            
-            // 由於沒有評分，我們顯示「距離」和「類型」
-            const distDisplay = place.distance < 1 ? `${(place.distance * 1000).toFixed(0)} m` : `${place.distance.toFixed(1)} km`;
-            
             card.innerHTML = `
-                <div class="place-header">
-                    <div class="place-name">${place.tags.name}</div>
-                    <div class="tag-badge">📍 ${distDisplay}</div>
+                <div class="place-name">${name}</div>
+                <div class="place-info">經緯度: ${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}</div>
+                <div class="btn-group">
+                    <a href="${navUrl}" target="_blank" class="action-btn btn-nav">🚀 導航</a>
+                    <a href="${searchUrl}" target="_blank" class="action-btn btn-review">🔍 查 Google 評價</a>
                 </div>
-                <div class="place-meta">
-                    <div>Type: ${place.tags[searchKey] || searchValue}</div>
-                    <div style="opacity:0.6; font-size:10px; margin-top:4px;">COORD: ${place.lat.toFixed(4)}, ${place.lon.toFixed(4)}</div>
-                </div>
-                <a href="${navUrl}" target="_blank" class="action-btn">
-                    INITIATE NAVIGATION ➜
-                </a>
             `;
-            resultsDiv.appendChild(card);
-
-            // 地圖標記
-            const marker = L.marker([place.lat, place.lon]).addTo(map)
-                .bindPopup(`<b>${place.tags.name}</b><br>${distDisplay}`);
-            placeMarkers.push(marker);
+            div.appendChild(card);
         });
     }
-
-    // 輔助：計算距離 (Haversine 公式)
-    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-        var R = 6371; 
-        var dLat = deg2rad(lat2-lat1);  
-        var dLon = deg2rad(lon2-lon1); 
-        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-        var d = R * c; 
-        return d;
-    }
-    function deg2rad(deg) { return deg * (Math.PI/180); }
-
 </script>
 </body>
 </html>
