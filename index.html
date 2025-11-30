@@ -12,6 +12,7 @@
             --ios-orange: #FF9500;
             --ios-red: #FF3B30;
             --ios-green: #34C759;
+            --ios-purple: #AF52DE; /* 新增紫色給小吃用 */
             --ios-gray-text: #8E8E93;
             --glass-material: rgba(255, 255, 255, 0.85);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
@@ -21,10 +22,15 @@
         header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
         header p { margin: 4px 0 0; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; }
         .controls-container { padding: 16px 20px; background: var(--ios-bg); }
-        .btn-group { display: flex; gap: 12px; background: rgba(118, 118, 128, 0.12); padding: 4px; border-radius: 14px; }
-        button { flex: 1; border: none; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--ios-gray-text); }
+        
+        /* 修改：按鈕群組適應三顆按鈕 */
+        .btn-group { display: flex; gap: 8px; background: rgba(118, 118, 128, 0.12); padding: 4px; border-radius: 14px; }
+        button { flex: 1; border: none; padding: 10px 4px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--ios-gray-text); white-space: nowrap; }
+        
         button.active-fun { background: var(--ios-card); color: var(--ios-orange); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
         button.active-food { background: var(--ios-card); color: var(--ios-red); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
+        button.active-snack { background: var(--ios-card); color: var(--ios-purple); box-shadow: 0 3px 8px rgba(0,0,0,0.12); } /* 小吃按鈕樣式 */
+        
         button:active { transform: scale(0.96); }
         #status { text-align: center; margin-top: 12px; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; min-height: 20px; }
         .map-wrapper { padding: 0 20px; margin-bottom: 20px; }
@@ -34,10 +40,13 @@
         .place-card:active { transform: scale(0.98); background-color: #F9F9F9; }
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .place-name { font-size: 18px; font-weight: 700; color: #000; line-height: 1.3; }
-        .place-rating { background: #F2F2F7; color: var(--ios-orange); padding: 4px 10px; border-radius: 50px; font-size: 13px; font-weight: 700; }
+        .place-rating { background: #F2F2F7; color: var(--ios-orange); padding: 4px 10px; border-radius: 50px; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-left: 8px;}
         .place-info { font-size: 14px; color: #8E8E93; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        
         .parent-tips { background-color: #F0F8FF; color: #004085; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; margin-top: 12px; }
         .food-tips { background-color: #FFF0F0; color: #C02520; }
+        .snack-tips { background-color: #F3E5F5; color: #7B1FA2; } /* 小吃專用紫色筆記 */
+        
         .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
         .tag { background: #F2F2F7; color: #8E8E93; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 100px; }
         .open-now { color: var(--ios-green); }
@@ -57,7 +66,8 @@
 <div class="controls-container">
     <div class="btn-group">
         <button id="btn-fun" onclick="switchMode('fun')">🎡 找好玩</button>
-        <button id="btn-food" onclick="switchMode('food')">🐶 親子美食</button>
+        <button id="btn-food" onclick="switchMode('food')">🐶 親子餐</button>
+        <button id="btn-snack" onclick="switchMode('snack')">🍜 找小吃</button>
     </div>
     <div id="status">Ready to explore</div>
 </div>
@@ -109,17 +119,21 @@
         currentMode = mode;
         const btnFun = document.getElementById('btn-fun');
         const btnFood = document.getElementById('btn-food');
+        const btnSnack = document.getElementById('btn-snack');
         
         // UI 重置
         document.getElementById('debug-info').innerText = ""; 
         document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
         clearMarkers();
 
-        if (mode === 'fun') {
-            btnFun.classList.add('active-fun'); btnFood.className = ''; 
-        } else {
-            btnFood.classList.add('active-food'); btnFun.className = '';
-        }
+        // 清除所有按鈕狀態
+        btnFun.className = ''; btnFood.className = ''; btnSnack.className = '';
+
+        // 活化當前按鈕
+        if (mode === 'fun') btnFun.classList.add('active-fun');
+        else if (mode === 'food') btnFood.classList.add('active-food');
+        else if (mode === 'snack') btnSnack.classList.add('active-snack');
+        
         startExplore();
     }
 
@@ -137,8 +151,10 @@
                     
                     if (currentMode === 'fun') {
                         await searchFunPlaces(userLocation);
-                    } else {
-                        await searchFoodWithFallback(userLocation);
+                    } else if (currentMode === 'food') {
+                        await searchFoodWithFallback(userLocation); // 親子
+                    } else if (currentMode === 'snack') {
+                        await searchLocalSnacks(userLocation); // 新增：找小吃
                     }
                     statusDiv.innerHTML = "Done";
                 },
@@ -147,17 +163,13 @@
         } else { statusDiv.innerHTML = "❌ No GPS Support"; }
     }
 
-    // 🎡 找好玩 (修正版：直接給 lat, lng 和 radius，不要有 wrapper)
+    // 🎡 找好玩
     async function searchFunPlaces(location) {
         try {
             const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
             const request = {
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                // 修正：直接給 center 和 radius
-                locationRestriction: { 
-                    center: location, 
-                    radius: 1500 
-                },
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
+                locationRestriction: { center: location, radius: 1500 },
                 includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
                 maxResultCount: 10,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
@@ -166,49 +178,35 @@
             const { places } = await Place.searchNearby(request);
             displayResults(places, 'fun');
         } catch (e) {
-            console.error(e);
-            document.getElementById('debug-info').innerText = "Fun Error: " + e.message;
-            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋出錯，請看下方訊息</p></div>';
+            handleError(e, "Fun Error");
         }
     }
 
-    // 🐶 找美食 (修正版：移除 openNow，使用 locationBias)
+    // 🐶 找親子 (維持原本邏輯)
     async function searchFoodWithFallback(location) {
         const { Place } = await google.maps.importLibrary("places");
-        
-        // 嘗試 1: 親子搜尋 (使用 Text Search)
         try {
             const request = {
                 textQuery: "親子餐廳 寵物友善", 
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                // 修正：locationBias 格式
-                locationBias: { 
-                    center: location, 
-                    radius: 1000 
-                },
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
+                locationBias: { center: location, radius: 1000 },
                 maxResultCount: 15,
                 language: 'zh-TW',
             };
             const { places } = await Place.searchByText(request);
             if (places && places.length > 0) {
                 displayResults(places, 'food');
-                return; 
+                return;
             }
-        } catch(e) {
-            console.warn("Text search failed, switching to fallback", e);
-        }
+        } catch(e) { console.warn("Fallback trigger", e); }
 
-        // 嘗試 2: 備案 (使用 Nearby Search)
+        // 備案
         try {
-            document.getElementById('status').innerHTML = "切換一般搜尋...";
+            document.getElementById('status').innerHTML = "切換備案搜尋...";
             const { SearchNearbyRankPreference } = await google.maps.importLibrary("places");
             const fallbackRequest = {
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
-                // 修正：直接給 center 和 radius
-                locationRestriction: { 
-                    center: location, 
-                    radius: 1000 
-                },
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
+                locationRestriction: { center: location, radius: 1000 },
                 includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], 
                 maxResultCount: 15,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
@@ -216,9 +214,31 @@
             };
             const { places } = await Place.searchNearby(fallbackRequest);
             displayResults(places, 'food_fallback');
-        } catch(e) {
-            document.getElementById('results').innerHTML = '<div class="empty-state"><p>找不到餐廳，請稍後再試</p></div>';
-            document.getElementById('debug-info').innerText = "Fallback Error: " + e.message;
+        } catch(e) { handleError(e, "Fallback Error"); }
+    }
+
+    // 🍜 新增：找小吃 (老店、必吃、排隊美食)
+    async function searchLocalSnacks(location) {
+        const { Place } = await google.maps.importLibrary("places");
+        try {
+            // 關鍵字魔法：結合「必吃」、「小吃」、「老店」
+            // 這樣不管在台灣(滷肉飯)或日本(拉麵)都通用
+            const request = {
+                textQuery: "必吃美食 在地小吃 老店 排隊名店", 
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
+                locationBias: { center: location, radius: 1000 },
+                maxResultCount: 15,
+                language: 'zh-TW', // 強制中文結果
+                minRating: 4.0 // 既然要找知名的，就過濾掉 4.0 以下的雷店
+            };
+            const { places } = await Place.searchByText(request);
+            if (places && places.length > 0) {
+                displayResults(places, 'snack');
+            } else {
+                document.getElementById('results').innerHTML = '<div class="empty-state"><p>附近沒看到知名排隊店，試試別處？</p></div>';
+            }
+        } catch (e) {
+            handleError(e, "Snack Error");
         }
     }
 
@@ -227,12 +247,10 @@
         resultsDiv.innerHTML = ""; 
         clearMarkers();
 
-        // 過濾：只顯示「營業中」或「沒有狀態」的店 (手動過濾 openNow)
-        // 注意：有些地點可能沒有 businessStatus，我們預設顯示
         const activePlaces = places.filter(p => p.businessStatus === 'OPERATIONAL' || !p.businessStatus);
 
         if (!activePlaces || activePlaces.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有「營業中」的地點</p></div>';
+            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有營業中的地點</p></div>';
             return;
         }
 
@@ -245,9 +263,14 @@
             let openStatus = "<span class='open-now'>Open</span>";
 
             const advice = analyzeForParents(types, rating, mode);
-            const isFood = mode.includes('food');
-            const tipClass = isFood ? 'parent-tips food-tips' : 'parent-tips';
-            const icon = isFood ? '🐶' : '🎡';
+            
+            // 決定卡片樣式
+            let tipClass = 'parent-tips';
+            let icon = '📍';
+            
+            if (mode === 'fun') { icon = '🎡'; }
+            else if (mode.includes('food')) { tipClass += ' food-tips'; icon = '🐶'; }
+            else if (mode === 'snack') { tipClass += ' snack-tips'; icon = '🍜'; } // 紫色小吃樣式
 
             const delay = index * 0.1;
             const card = document.createElement('div');
@@ -276,22 +299,32 @@
 
     function analyzeForParents(types, rating, mode) {
         let advice = "";
-        if (mode.includes('food')) {
+        
+        if (mode === 'snack') {
+            advice = "🍽️ **在地人氣/知名小吃！**";
+            if (rating > 4.5) advice += " 評分極高，可能需要排隊。";
+            if (types.includes('meal_takeaway')) advice += " 可考慮外帶回飯店吃。";
+            else advice += " 用餐環境可能較擁擠，留意小孩安全。";
+        } else if (mode.includes('food')) {
             advice = mode === 'food' ? "符合親子/寵物友善搜尋結果。" : "附近熱門餐廳 (一般模式)。";
-            if (rating > 4.5) advice += " 人氣高建議訂位。";
-            if (types.includes('cafe')) advice = "適合休息喝咖啡。";
+            if (rating > 4.5) advice += " 建議訂位。";
         } else {
             if (types.includes('park')) advice = "3歲寶最愛！盡情放電。";
             else if (types.includes('museum') || types.includes('aquarium')) advice = "室內安全，好奇寶寶時間。";
-            else if (types.includes('shopping_mall')) advice = "停車補給方便，有冷氣。";
             else advice = "熱門景點，請留意人潮。";
         }
         return advice;
     }
 
     function formatType(type) {
-        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食', 'bakery': '烘焙' };
+        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食', 'bakery': '烘焙', 'meal_takeaway': '外帶' };
         return dict[type] || '地點';
+    }
+    
+    function handleError(e, title) {
+        console.error(e);
+        document.getElementById('debug-info').innerText = title + ": " + e.message;
+        document.getElementById('results').innerHTML = '<div class="empty-state"><p>暫時無法搜尋，請稍後再試</p></div>';
     }
 </script>
 </body>
