@@ -6,26 +6,8 @@
     <title>Travel OS Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
+        /* 🎨 核心樣式 */
         :root {
-            /* 深色模式 */
-            --bg-color: #000000;
-            --bg-image: radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%), radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
-            --glass-panel: rgba(30, 30, 35, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --text-primary: #FFFFFF;
-            --text-secondary: #9898A0;
-            --neon-accent: #0A84FF;
-            --neon-success: #32D74B;
-            --neon-warn: #FF453A;
-            --price-color: #FFD60A; /* 金錢的顏色 */
-            --card-radius: 24px;
-            --shadow: 0 10px 30px rgba(0,0,0,0.3);
-            --chip-bg: rgba(30,30,35, 0.4);
-            --header-bg: rgba(20, 20, 20, 0.6);
-        }
-
-        [data-theme="light"] {
-            /* 淺色模式 */
             --bg-color: #F2F2F7;
             --bg-image: none;
             --glass-panel: #FFFFFF;
@@ -36,9 +18,30 @@
             --neon-success: #34C759;
             --neon-warn: #FF3B30;
             --price-color: #FF9500;
+            --distance-color: #5856D6;
+            --card-radius: 24px;
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
             --chip-bg: #FFFFFF;
             --header-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --bg-image: radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%), radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
+                --glass-panel: rgba(30, 30, 35, 0.75);
+                --glass-border: rgba(255, 255, 255, 0.15);
+                --text-primary: #FFFFFF;
+                --text-secondary: #9898A0;
+                --neon-accent: #0A84FF;
+                --neon-success: #32D74B;
+                --neon-warn: #FF453A;
+                --price-color: #FFD60A;
+                --distance-color: #BF5AF2;
+                --shadow: 0 10px 30px rgba(0,0,0,0.3);
+                --chip-bg: rgba(30,30,35, 0.4);
+                --header-bg: rgba(20, 20, 20, 0.6);
+            }
         }
 
         body { 
@@ -49,67 +52,31 @@
             margin: 0; padding: 0; 
             color: var(--text-primary); 
             -webkit-tap-highlight-color: transparent; 
-            padding-bottom: 100px;
-            transition: background 0.3s ease, color 0.3s ease;
+            padding-bottom: 120px;
+            transition: background 0.5s ease, color 0.5s ease;
         }
         
-        /* 🌀 Header 優化版：整合所有資訊 */
+        /* Header */
         header { 
             background: var(--header-bg); 
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px);
-            margin: 16px; padding: 12px 20px; 
+            margin: 16px; padding: 14px 24px; 
             border-radius: 32px; border: 1px solid var(--glass-border);
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: var(--shadow);
             position: sticky; top: 16px; z-index: 100;
-            transition: all 0.3s ease;
         }
+        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
         
-        .header-left h1 { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: 0.5px; }
-        .header-info { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-        
-        /* 天氣標籤 */
         .weather-badge {
-            font-size: 12px; font-weight: 600; color: var(--text-secondary);
-            display: flex; align-items: center; gap: 4px;
-        }
-
-        /* 🎚️ 整合式開關 (Header內) */
-        .toggle-btn {
-            background: var(--chip-bg);
+            font-size: 13px; font-weight: 600; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 6px;
+            background: var(--chip-bg); padding: 6px 12px; border-radius: 20px;
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 4px;
-            display: flex;
-            cursor: pointer;
-            position: relative;
-            width: 52px;
-            height: 28px;
-            transition: all 0.3s ease;
-        }
-        
-        .toggle-icon {
-            font-size: 14px;
-            line-height: 28px;
-            width: 50%;
-            text-align: center;
-            z-index: 2;
         }
 
-        .toggle-slider {
-            position: absolute;
-            top: 2px; left: 2px;
-            width: 24px; height: 24px;
-            background: var(--neon-accent);
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1;
-        }
-
-        [data-theme="light"] .toggle-slider { transform: translateX(24px); background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-
-        /* 🔘 Tabs */
+        /* Tabs */
         .main-tabs { 
             display: flex; margin: 16px; 
             background: var(--chip-bg); 
@@ -124,7 +91,7 @@
         }
         .tab-btn.active { background: var(--glass-panel); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         
-        /* 💊 Chips */
+        /* Chips */
         .sub-nav-container { margin: 0; overflow: hidden; padding: 0 0 10px 0; }
         .sub-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
@@ -136,36 +103,72 @@
         }
         .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
 
-        /* 🗺️ Map */
+        /* Filter Toggle (新功能: 只顯示營業中) */
+        .filter-container {
+            padding: 0 24px 12px 24px;
+            display: flex; justify-content: flex-end; align-items: center;
+        }
+        .filter-label {
+            font-size: 13px; font-weight: 600; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        .ios-toggle {
+            appearance: none; width: 40px; height: 24px; background: rgba(120,120,128,0.3);
+            border-radius: 20px; position: relative; cursor: pointer; outline: none; transition: 0.3s;
+        }
+        .ios-toggle::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+            background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s;
+        }
+        .ios-toggle:checked { background: var(--neon-success); }
+        .ios-toggle:checked::after { transform: translateX(16px); }
+
+        /* Map */
         .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
-        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); }
+        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); transition: border-color 0.5s ease; }
         
-        /* 🃏 Cards */
+        /* Cards & Image (新功能: 封面照片) */
         .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
         .place-card { 
             background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
-            padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); 
-            animation: fadeInUp 0.5s ease forwards;
-            transition: background 0.3s ease;
+            padding: 0; /* 改為0以讓圖片滿版 */
+            margin-bottom: 24px; box-shadow: var(--shadow); 
+            animation: fadeInUp 0.5s ease forwards; overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: background 0.5s ease, border-color 0.5s ease;
         }
+
+        .place-img-wrapper {
+            width: 100%; height: 160px; overflow: hidden; position: relative;
+            background: #e5e5ea;
+        }
+        .place-img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.5s;
+        }
+        .place-img-placeholder {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; color: rgba(0,0,0,0.2);
+        }
+
+        .place-content { padding: 20px; }
         
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .place-name { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 70%; }
+        .place-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 70%; }
         
-        /* 評分與價位 */
-        .place-rating-badge { 
-            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-        }
-        .rating-box { 
-            padding: 4px 8px; border-radius: 8px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; 
-        }
+        .place-rating-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .rating-box { padding: 4px 8px; border-radius: 8px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
         .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); }
         .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); border: 1px solid rgba(255, 69, 58, 0.3); }
-        .price-level { font-size: 12px; color: var(--price-color); font-weight: 700; letter-spacing: 1px; }
+        
+        .info-tags { display: flex; gap: 6px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+        .price-tag { color: var(--price-color); }
+        .distance-tag { color: var(--distance-color); background: rgba(128,128,128,0.1); padding: 2px 6px; border-radius: 6px;}
 
-        .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+        .place-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+        .meta-row { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
         
         .review-box { 
             background: rgba(128,128,128,0.1); padding: 14px; border-radius: 16px; 
@@ -181,7 +184,7 @@
         .action-btn {
             display: block; width: 100%; text-align: center; 
             background: rgba(128,128,128,0.1); border: 1px solid rgba(128,128,128,0.2);
-            color: var(--text-primary); padding: 12px 0; border-radius: 16px;
+            color: var(--text-primary); padding: 14px 0; border-radius: 16px;
             font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
         }
         .action-btn:hover { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; }
@@ -191,20 +194,12 @@
         .gm-style-cc { display: none !important; }
     </style>
 </head>
-<body data-theme="dark">
+<body>
 
 <header>
-    <div class="header-left">
-        <h1>Travel OS</h1>
-        <div class="header-info">
-            <span class="weather-badge" id="weather-badge">📡 定位中...</span>
-        </div>
-    </div>
-    
-    <div class="toggle-btn" onclick="toggleTheme()">
-        <div class="toggle-slider"></div>
-        <div class="toggle-icon">🌙</div>
-        <div class="toggle-icon">☀️</div>
+    <h1>Travel OS</h1>
+    <div class="weather-badge" id="weather-badge">
+        📡 定位中...
     </div>
 </header>
 
@@ -217,6 +212,13 @@
 
 <div class="sub-nav-container">
     <div class="sub-scroll-wrapper" id="sub-nav"></div>
+</div>
+
+<div class="filter-container">
+    <label class="filter-label">
+        只顯示營業中
+        <input type="checkbox" class="ios-toggle" id="openFilter" onchange="toggleFilter()">
+    </label>
 </div>
 
 <div id="status">SYSTEM READY</div>
@@ -232,13 +234,17 @@
     </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClFqb1iWGHOvEPNLtA2-lHsQT844C4sqE&loading=async&libraries=places,maps"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&loading=async&libraries=places,maps"></script>
 
 <script>
     let map;
     let userLocation = null;
     let currentMarkers = [];
     let currentCircle = null;
+    let lastFetchedPlaces = []; // 用來儲存上次搜尋結果，方便做篩選
+    
+    // 自動深色模式偵測
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const CATEGORIES = {
         'fun': [
@@ -284,18 +290,11 @@
         }
     };
 
-    function toggleTheme() {
-        const body = document.body;
-        const isDark = body.getAttribute('data-theme') === 'dark';
-        
-        if (isDark) {
-            body.setAttribute('data-theme', 'light');
-            if(map) map.setOptions({ styles: [] });
-        } else {
-            body.setAttribute('data-theme', 'dark');
-            if(map) map.setOptions({ styles: darkMapStyle });
+    darkModeQuery.addListener((e) => {
+        if(map) {
+            map.setOptions({ styles: e.matches ? darkMapStyle : [] });
         }
-    }
+    });
 
     async function fetchWeather(lat, lng) {
         try {
@@ -311,7 +310,6 @@
 
             document.getElementById('weather-badge').innerHTML = `${icon} ${temp}°C`;
         } catch(e) {
-            console.error("Weather error", e);
             document.getElementById('weather-badge').innerHTML = "N/A";
         }
     }
@@ -345,13 +343,20 @@
         });
     }
 
+    // 🔍 篩選器開關邏輯
+    function toggleFilter() {
+        if (lastFetchedPlaces.length > 0) {
+            displayResults(lastFetchedPlaces); // 重新渲染，不需重打 API
+        }
+    }
+
     function startSearch(query, btnElement) {
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
         
         const statusDiv = document.getElementById('status');
         statusDiv.innerHTML = "📡 搜尋最近地點中...";
-        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>正在計算距離...</p></div>';
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>正在下載圖片與資料...</p></div>';
         clearMarkers();
 
         if (navigator.geolocation) {
@@ -376,7 +381,7 @@
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
-        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const isDark = darkModeQuery.matches;
 
         if (!map) {
             map = new Map(document.getElementById("map"), {
@@ -402,15 +407,28 @@
         currentMarkers = [];
     }
 
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; 
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    function formatDistance(distKm) {
+        return distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`;
+    }
+
     async function performSearch(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
 
         try {
-            // 加入 priceLevel 欄位
             let request = {
                 textQuery: query,
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel'],
+                // 🖼️ 新增 photos 欄位
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel', 'currentOpeningHours', 'photos'],
                 maxResultCount: 20,
                 language: 'zh-TW',
                 locationBias: { center: location }, 
@@ -421,38 +439,56 @@
             const { places } = await Place.searchByText(request);
             
             if (places && places.length > 0) {
-                displayResults(places, query);
+                lastFetchedPlaces = places; // 存起來給篩選器用
+                displayResults(places);
             } else {
                 document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>附近沒有找到相關地點。</p></div>';
             }
         } catch (e) {
             console.error("Search failed:", e);
-            let friendlyMsg = "連線錯誤";
-            if (e.message && e.message.includes("Billing")) friendlyMsg = "API 需啟用帳單功能";
-            
-            document.getElementById('results').innerHTML = `
-                <div style="text-align:center; padding:30px; color:var(--neon-warn);">
-                    <h3>${friendlyMsg}</h3>
-                    <p style="font-size:11px; opacity:0.7; margin-top:10px">請檢查 API Key 設定</p>
-                </div>
-            `;
+            document.getElementById('results').innerHTML = `<div style="text-align:center; padding:30px; color:var(--neon-warn);"><h3>連線錯誤</h3></div>`;
         }
     }
 
-    function displayResults(places, query) {
+    function displayResults(places) {
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = "";
         
+        // 🔍 檢查是否開啟篩選
+        const filterOpen = document.getElementById('openFilter').checked;
+
+        let visibleCount = 0;
+
         places.forEach((place, index) => {
+            const isOpen = place.businessStatus === 'OPERATIONAL';
+            
+            // 如果開了篩選器，且店家沒營業，就跳過
+            if (filterOpen && !isOpen) return;
+
+            visibleCount++;
             const name = place.displayName || "Unknown";
             const rating = place.rating || 0;
             const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
             let address = place.formattedAddress || "";
             address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
-            const isOpen = place.businessStatus === 'OPERATIONAL';
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
             
-            // 💰 價位顯示邏輯
+            // 🖼️ 處理圖片
+            let imageHtml = `<div class="place-img-placeholder">📷</div>`;
+            if (place.photos && place.photos.length > 0) {
+                // 取得第一張照片，寬度限制 400px 加速載入
+                const photoUrl = place.photos[0].getURI({maxWidth: 400});
+                imageHtml = `<img src="${photoUrl}" class="place-img" alt="${name}">`;
+            }
+
+            // 距離
+            let distanceHtml = "";
+            if (userLocation && place.location) {
+                const dist = calculateDistance(userLocation.lat, userLocation.lng, place.location.lat(), place.location.lng());
+                distanceHtml = `<span class="distance-tag">📍 ${formatDistance(dist)}</span>`;
+            }
+
+            // 價位
             let priceStr = "";
             if (place.priceLevel) {
                 switch(place.priceLevel) {
@@ -463,28 +499,29 @@
                 }
             }
 
+            // 營業時間文字
+            let hoursHtml = "";
+            if (place.currentOpeningHours && place.currentOpeningHours.weekdayDescriptions) {
+                const dayIndex = new Date().getDay(); 
+                const apiIndex = (dayIndex + 6) % 7; 
+                if (place.currentOpeningHours.weekdayDescriptions[apiIndex]) {
+                    let todayHours = place.currentOpeningHours.weekdayDescriptions[apiIndex];
+                    todayHours = todayHours.split(": ")[1] || todayHours;
+                    hoursHtml = `<span>🕒 ${todayHours}</span>`;
+                }
+            }
+
             const isLowRating = rating > 0 && rating < 4.0;
             let reviewHtml = "";
-            
             if (place.reviews && place.reviews.length > 0) {
                 const reviewText = place.reviews[0].text || "無文字評論";
                 if (isLowRating) {
-                    reviewHtml = `
-                        <div class="review-box bad">
-                            <span class="review-title" style="color:var(--neon-warn)">⚠️ 注意：評分偏低 (${rating})</span>
-                            <span class="review-text">"${reviewText}"</span>
-                        </div>`;
+                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:var(--neon-warn)">⚠️ 注意：評分偏低 (${rating})</span><span class="review-text">"${reviewText}"</span></div>`;
                 } else {
-                    reviewHtml = `
-                        <div class="review-box good">
-                            <span class="review-title" style="color:var(--neon-success)">💬 最新評價</span>
-                            <span class="review-text">"${reviewText}"</span>
-                        </div>`;
+                    reviewHtml = `<div class="review-box good"><span class="review-title" style="color:var(--neon-success)">💬 最新評價</span><span class="review-text">"${reviewText}"</span></div>`;
                 }
-            } else {
-                 if (isLowRating) {
-                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:var(--neon-warn)">⚠️ 評分低於 4.0，請留意。</span></div>`;
-                }
+            } else if (isLowRating) {
+                reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:var(--neon-warn)">⚠️ 評分低於 4.0，請留意。</span></div>`;
             }
 
             const card = document.createElement('div');
@@ -493,22 +530,31 @@
             const ratingClass = isLowRating ? 'rating-low' : 'rating-high';
             
             card.innerHTML = `
-                <div class="place-header">
-                    <div class="place-name">${name}</div>
-                    <div class="place-rating-badge">
-                        <div class="rating-box ${ratingClass}">
-                            ${rating > 0 ? '★ ' + rating : 'New'} 
-                            <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
+                <div class="place-img-wrapper">${imageHtml}</div>
+                <div class="place-content">
+                    <div class="place-header">
+                        <div class="place-name">${name}</div>
+                        <div class="place-rating-badge">
+                            <div class="rating-box ${ratingClass}">
+                                ${rating > 0 ? '★ ' + rating : 'New'} 
+                                <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
+                            </div>
+                            <div class="info-tags">
+                                ${distanceHtml}
+                                <span class="price-tag">${priceStr}</span>
+                            </div>
                         </div>
-                        <div class="price-level">${priceStr}</div>
                     </div>
+                    <div class="place-meta">
+                        <div class="meta-row">
+                            ${isOpen ? '<span class="status-dot" style="background:var(--neon-success)"></span><span style="color:var(--neon-success);font-weight:bold">營業中</span>' : '<span class="status-dot" style="background:var(--neon-warn)"></span><span style="color:var(--neon-warn);font-weight:bold">休息中</span>'}
+                            ${hoursHtml}
+                        </div>
+                        <div class="meta-row">• ${address}</div>
+                    </div>
+                    ${reviewHtml}
+                    <a href="${mapUrl}" target="_blank" class="action-btn">NAVIGATE ➜</a>
                 </div>
-                <div class="place-meta">
-                    <div>${isOpen ? '<span class="status-dot" style="background:var(--neon-success)"></span>營業中' : '<span class="status-dot" style="background:var(--neon-warn)"></span>休息中'}</div>
-                    <div>• ${address}</div>
-                </div>
-                ${reviewHtml}
-                <a href="${mapUrl}" target="_blank" class="action-btn">NAVIGATE ➜</a>
             `;
             resultsDiv.appendChild(card);
             
@@ -519,6 +565,10 @@
             marker.addListener("click", () => card.scrollIntoView({ behavior: "smooth", block: "center" }));
             currentMarkers.push(marker);
         });
+
+        if (visibleCount === 0 && places.length > 0) {
+            resultsDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>篩選後沒有結果，請嘗試關閉「只顯示營業中」。</p></div>';
+        }
     }
 </script>
 </body>
