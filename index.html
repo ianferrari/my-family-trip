@@ -43,7 +43,7 @@
         .open-now { color: var(--ios-green); }
         .closed-now { color: var(--ios-red); }
         .empty-state { text-align: center; margin-top: 40px; color: #C7C7CC; }
-        #debug-info { text-align: center; font-size: 10px; color: #ff3b30; margin-top: 20px; opacity: 0.7; }
+        #debug-info { text-align: center; font-size: 10px; color: #ff3b30; margin-top: 20px; opacity: 0.7; word-break: break-all; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -82,6 +82,7 @@
     let currentMarkers = []; 
     let currentMode = null; 
 
+    // 初始化地圖
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
@@ -108,6 +109,8 @@
         currentMode = mode;
         const btnFun = document.getElementById('btn-fun');
         const btnFood = document.getElementById('btn-food');
+        
+        // UI 重置
         document.getElementById('debug-info').innerText = ""; 
         document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
         clearMarkers();
@@ -144,15 +147,16 @@
         } else { statusDiv.innerHTML = "❌ No GPS Support"; }
     }
 
-    // 🎡 找好玩 (已修正格式)
+    // 🎡 找好玩 (修正版：直接給 lat, lng 和 radius，不要有 wrapper)
     async function searchFunPlaces(location) {
         try {
             const { Place, SearchNearbyRankPreference } = await google.maps.importLibrary("places");
-            // 修正：locationRestriction 必須包含 circle
             const request = {
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                // 修正：直接給 center 和 radius
                 locationRestriction: { 
-                    circle: { center: location, radius: 1500 } 
+                    center: location, 
+                    radius: 1500 
                 },
                 includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
                 maxResultCount: 10,
@@ -164,20 +168,23 @@
         } catch (e) {
             console.error(e);
             document.getElementById('debug-info').innerText = "Fun Error: " + e.message;
+            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋出錯，請看下方訊息</p></div>';
         }
     }
 
-    // 🐶 找美食 (已修正格式)
+    // 🐶 找美食 (修正版：移除 openNow，使用 locationBias)
     async function searchFoodWithFallback(location) {
         const { Place } = await google.maps.importLibrary("places");
         
-        // 嘗試 1: 親子搜尋 (移除 openNow 避免報錯)
+        // 嘗試 1: 親子搜尋 (使用 Text Search)
         try {
             const request = {
                 textQuery: "親子餐廳 寵物友善", 
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                // 修正：locationBias 格式
                 locationBias: { 
-                    circle: { center: location, radius: 1000 } 
+                    center: location, 
+                    radius: 1000 
                 },
                 maxResultCount: 15,
                 language: 'zh-TW',
@@ -191,15 +198,16 @@
             console.warn("Text search failed, switching to fallback", e);
         }
 
-        // 嘗試 2: 備案 (使用標準 Nearby Search)
+        // 嘗試 2: 備案 (使用 Nearby Search)
         try {
             document.getElementById('status').innerHTML = "切換一般搜尋...";
             const { SearchNearbyRankPreference } = await google.maps.importLibrary("places");
-            // 修正：locationRestriction 格式
             const fallbackRequest = {
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                // 修正：直接給 center 和 radius
                 locationRestriction: { 
-                    circle: { center: location, radius: 1000 } 
+                    center: location, 
+                    radius: 1000 
                 },
                 includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], 
                 maxResultCount: 15,
@@ -219,18 +227,22 @@
         resultsDiv.innerHTML = ""; 
         clearMarkers();
 
-        if (!places || places.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有符合的地點</p></div>';
+        // 過濾：只顯示「營業中」或「沒有狀態」的店 (手動過濾 openNow)
+        // 注意：有些地點可能沒有 businessStatus，我們預設顯示
+        const activePlaces = places.filter(p => p.businessStatus === 'OPERATIONAL' || !p.businessStatus);
+
+        if (!activePlaces || activePlaces.length === 0) {
+            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有「營業中」的地點</p></div>';
             return;
         }
 
-        places.forEach((place, index) => {
+        activePlaces.forEach((place, index) => {
             const name = place.displayName;
             const rating = place.rating;
             const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "";
             const types = place.types || [];
             
-            let openStatus = place.businessStatus === 'OPERATIONAL' ? "<span class='open-now'>Open</span>" : "<span class='closed-now'>Closed</span>";
+            let openStatus = "<span class='open-now'>Open</span>";
 
             const advice = analyzeForParents(types, rating, mode);
             const isFood = mode.includes('food');
