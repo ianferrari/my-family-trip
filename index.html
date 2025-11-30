@@ -6,9 +6,8 @@
     <title>Travel OS Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* 🎨 CSS 變數系統 */
         :root {
-            /* 深色模式預設值 */
+            /* 深色模式 */
             --bg-color: #000000;
             --bg-image: radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%), radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
             --glass-panel: rgba(30, 30, 35, 0.75);
@@ -18,14 +17,15 @@
             --neon-accent: #0A84FF;
             --neon-success: #32D74B;
             --neon-warn: #FF453A;
+            --price-color: #FFD60A; /* 金錢的顏色 */
             --card-radius: 24px;
             --shadow: 0 10px 30px rgba(0,0,0,0.3);
             --chip-bg: rgba(30,30,35, 0.4);
             --header-bg: rgba(20, 20, 20, 0.6);
         }
 
-        /* ☀️ 淺色模式覆寫 */
         [data-theme="light"] {
+            /* 淺色模式 */
             --bg-color: #F2F2F7;
             --bg-image: none;
             --glass-panel: #FFFFFF;
@@ -35,6 +35,7 @@
             --neon-accent: #007AFF;
             --neon-success: #34C759;
             --neon-warn: #FF3B30;
+            --price-color: #FF9500;
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
             --chip-bg: #FFFFFF;
             --header-bg: rgba(255, 255, 255, 0.85);
@@ -52,77 +53,61 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
         
-        /* 🌀 Header & Weather */
+        /* 🌀 Header 優化版：整合所有資訊 */
         header { 
             background: var(--header-bg); 
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px);
-            margin: 16px 16px 0 16px; /* 調整上邊距 */
-            padding: 16px 24px; 
-            border-radius: 40px; border: 1px solid var(--glass-border);
+            margin: 16px; padding: 12px 20px; 
+            border-radius: 32px; border: 1px solid var(--glass-border);
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: var(--shadow);
             position: sticky; top: 16px; z-index: 100;
             transition: all 0.3s ease;
         }
-        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
         
+        .header-left h1 { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: 0.5px; }
+        .header-info { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        
+        /* 天氣標籤 */
         .weather-badge {
-            display: flex; align-items: center; gap: 8px;
-            background: var(--chip-bg); border: 1px solid var(--glass-border);
-            padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
-        }
-        
-        /* 🎚️ iOS Toggle Switch (新樣式) */
-        .switch-container {
-            position: fixed; top: 28px; right: 20px; z-index: 102;
-            display: flex; align-items: center; gap: 8px;
-        }
-        
-        /* The switch - the box around the slider */
-        .ios-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 30px;
+            font-size: 12px; font-weight: 600; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 4px;
         }
 
-        /* Hide default HTML checkbox */
-        .ios-switch input { opacity: 0; width: 0; height: 0; }
-
-        /* The slider */
-        .slider {
-            position: absolute;
+        /* 🎚️ 整合式開關 (Header內) */
+        .toggle-btn {
+            background: var(--chip-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 4px;
+            display: flex;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #3a3a3c; /* 深色模式時的開關底色 */
-            transition: .4s;
-            border-radius: 34px;
-            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            width: 52px;
+            height: 28px;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-icon {
+            font-size: 14px;
+            line-height: 28px;
+            width: 50%;
+            text-align: center;
+            z-index: 2;
         }
 
-        .slider:before {
+        .toggle-slider {
             position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 2px;
-            bottom: 1px;
-            background-color: white;
-            transition: .4s;
+            top: 2px; left: 2px;
+            width: 24px; height: 24px;
+            background: var(--neon-accent);
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1;
         }
 
-        /* Checked state (Light Mode) */
-        input:checked + .slider {
-            background-color: #34C759; /* iOS Green */
-            border-color: #34C759;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        [data-theme="light"] .toggle-slider { transform: translateX(24px); background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* 🔘 Tabs */
         .main-tabs { 
@@ -166,11 +151,18 @@
         }
         
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .place-name { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 75%; }
+        .place-name { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 70%; }
         
-        .place-rating { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
+        /* 評分與價位 */
+        .place-rating-badge { 
+            display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+        }
+        .rating-box { 
+            padding: 4px 8px; border-radius: 8px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; 
+        }
         .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); }
         .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); border: 1px solid rgba(255, 69, 58, 0.3); }
+        .price-level { font-size: 12px; color: var(--price-color); font-weight: 700; letter-spacing: 1px; }
 
         .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
@@ -201,19 +193,18 @@
 </head>
 <body data-theme="dark">
 
-<div class="switch-container">
-    <label class="ios-switch">
-        <input type="checkbox" id="theme-checkbox" onchange="toggleTheme()">
-        <span class="slider"></span>
-    </label>
-</div>
-
 <header>
-    <div>
+    <div class="header-left">
         <h1>Travel OS</h1>
-        <div class="weather-badge" id="weather-badge">
-            📡 定位中...
+        <div class="header-info">
+            <span class="weather-badge" id="weather-badge">📡 定位中...</span>
         </div>
+    </div>
+    
+    <div class="toggle-btn" onclick="toggleTheme()">
+        <div class="toggle-slider"></div>
+        <div class="toggle-icon">🌙</div>
+        <div class="toggle-icon">☀️</div>
     </div>
 </header>
 
@@ -249,7 +240,6 @@
     let currentMarkers = [];
     let currentCircle = null;
 
-    // 🌟 設定檔
     const CATEGORIES = {
         'fun': [
             { name: "附近公園", query: "公園", icon: "🛝" },
@@ -294,23 +284,19 @@
         }
     };
 
-    // 🌗 深淺色模式切換 (Toggle Logic)
     function toggleTheme() {
-        const checkbox = document.getElementById('theme-checkbox');
         const body = document.body;
+        const isDark = body.getAttribute('data-theme') === 'dark';
         
-        if (checkbox.checked) {
-            // 切換為淺色模式 (Light Mode)
+        if (isDark) {
             body.setAttribute('data-theme', 'light');
-            if(map) map.setOptions({ styles: [] }); 
+            if(map) map.setOptions({ styles: [] });
         } else {
-            // 切換為深色模式 (Dark Mode)
             body.setAttribute('data-theme', 'dark');
             if(map) map.setOptions({ styles: darkMapStyle });
         }
     }
 
-    // 🌤️ 取得天氣
     async function fetchWeather(lat, lng) {
         try {
             const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
@@ -318,7 +304,6 @@
             const temp = Math.round(data.current_weather.temperature);
             const code = data.current_weather.weathercode;
             let icon = "☁️";
-            
             if(code <= 1) icon = "☀️";
             else if(code <= 3) icon = "⛅";
             else if(code <= 60) icon = "🌧️";
@@ -331,7 +316,6 @@
         }
     }
 
-    // 地圖深色樣式
     const darkMapStyle = [
         { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
         { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
@@ -418,15 +402,15 @@
         currentMarkers = [];
     }
 
-    // 🌟 全域絕對距離 (Global Strict Distance)
     async function performSearch(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
 
         try {
+            // 加入 priceLevel 欄位
             let request = {
                 textQuery: query,
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel'],
                 maxResultCount: 20,
                 language: 'zh-TW',
                 locationBias: { center: location }, 
@@ -468,6 +452,17 @@
             const isOpen = place.businessStatus === 'OPERATIONAL';
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
             
+            // 💰 價位顯示邏輯
+            let priceStr = "";
+            if (place.priceLevel) {
+                switch(place.priceLevel) {
+                    case "PRICE_LEVEL_INEXPENSIVE": priceStr = "$"; break;
+                    case "PRICE_LEVEL_MODERATE": priceStr = "$$"; break;
+                    case "PRICE_LEVEL_EXPENSIVE": priceStr = "$$$"; break;
+                    case "PRICE_LEVEL_VERY_EXPENSIVE": priceStr = "$$$$"; break;
+                }
+            }
+
             const isLowRating = rating > 0 && rating < 4.0;
             let reviewHtml = "";
             
@@ -500,9 +495,12 @@
             card.innerHTML = `
                 <div class="place-header">
                     <div class="place-name">${name}</div>
-                    <div class="place-rating ${ratingClass}">
-                        ${rating > 0 ? '★ ' + rating : 'New'} 
-                        <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
+                    <div class="place-rating-badge">
+                        <div class="rating-box ${ratingClass}">
+                            ${rating > 0 ? '★ ' + rating : 'New'} 
+                            <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span>
+                        </div>
+                        <div class="price-level">${priceStr}</div>
                     </div>
                 </div>
                 <div class="place-meta">
