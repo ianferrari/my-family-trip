@@ -12,30 +12,64 @@
             --ios-orange: #FF9500;
             --ios-red: #FF3B30;
             --ios-green: #34C759;
-            --ios-purple: #AF52DE; /* 新增紫色給小吃用 */
+            --ios-purple: #AF52DE;
+            --ios-brown: #A2845E; /* 燒肉色 */
+            --ios-indigo: #5856D6; /* 居酒屋色 */
             --ios-gray-text: #8E8E93;
             --glass-material: rgba(255, 255, 255, 0.85);
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif; background-color: var(--ios-bg); margin: 0; padding: 0; color: #1C1C1E; -webkit-tap-highlight-color: transparent; }
+        
+        /* 標題區 */
         header { background: var(--glass-material); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 0.5px solid rgba(0,0,0,0.1); padding: 12px 20px; }
         header h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
         header p { margin: 4px 0 0; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; }
-        .controls-container { padding: 16px 20px; background: var(--ios-bg); }
         
-        /* 修改：按鈕群組適應三顆按鈕 */
-        .btn-group { display: flex; gap: 8px; background: rgba(118, 118, 128, 0.12); padding: 4px; border-radius: 14px; }
-        button { flex: 1; border: none; padding: 10px 4px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--ios-gray-text); white-space: nowrap; }
+        /* 控制區塊：改為可左右滑動 */
+        .controls-container { padding: 12px 0 12px 20px; background: var(--ios-bg); overflow: hidden; }
+        .btn-scroll-wrapper { 
+            display: flex; 
+            gap: 12px; 
+            overflow-x: auto; 
+            padding-right: 20px; 
+            padding-bottom: 5px; /* 預留捲軸空間 */
+            scrollbar-width: none; /* Firefox 隱藏捲軸 */
+            -ms-overflow-style: none; /* IE 隱藏捲軸 */
+        }
+        .btn-scroll-wrapper::-webkit-scrollbar { display: none; /* Chrome 隱藏捲軸 */ }
+
+        /* 按鈕樣式：獨立膠囊狀 */
+        button { 
+            border: none; 
+            padding: 10px 16px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            background: #E5E5EA; /* 預設灰色 */
+            color: #8E8E93; 
+            white-space: nowrap; /* 不換行 */
+            flex-shrink: 0; /* 防止被擠壓 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         
-        button.active-fun { background: var(--ios-card); color: var(--ios-orange); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
-        button.active-food { background: var(--ios-card); color: var(--ios-red); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
-        button.active-snack { background: var(--ios-card); color: var(--ios-purple); box-shadow: 0 3px 8px rgba(0,0,0,0.12); } /* 小吃按鈕樣式 */
+        button:active { transform: scale(0.95); }
+
+        /* 活化狀態顏色 */
+        button.active-fun { background: var(--ios-orange); color: white; box-shadow: 0 4px 10px rgba(255, 149, 0, 0.3); }
+        button.active-food { background: var(--ios-green); color: white; box-shadow: 0 4px 10px rgba(52, 199, 89, 0.3); }
+        button.active-snack { background: var(--ios-purple); color: white; box-shadow: 0 4px 10px rgba(175, 82, 222, 0.3); }
+        button.active-bbq { background: var(--ios-red); color: white; box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3); }
+        button.active-bar { background: var(--ios-indigo); color: white; box-shadow: 0 4px 10px rgba(88, 86, 214, 0.3); }
+
+        #status { text-align: center; margin-top: 5px; font-size: 12px; color: var(--ios-gray-text); font-weight: 500; min-height: 20px; margin-bottom: 10px;}
         
-        button:active { transform: scale(0.96); }
-        #status { text-align: center; margin-top: 12px; font-size: 13px; color: var(--ios-gray-text); font-weight: 500; min-height: 20px; }
         .map-wrapper { padding: 0 20px; margin-bottom: 20px; }
         #map { width: 100%; height: 35vh; border-radius: 24px; box-shadow: var(--shadow-sm); background-color: #E5E5EA; }
-        .results-container { padding: 0 20px 60px 20px; max-width: 600px; margin: 0 auto; }
+        
+        .results-container { padding: 0 20px 80px 20px; max-width: 600px; margin: 0 auto; }
         .place-card { background: var(--ios-card); border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow-sm); transition: transform 0.2s; border: 1px solid rgba(0,0,0,0.02); }
         .place-card:active { transform: scale(0.98); background-color: #F9F9F9; }
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
@@ -43,16 +77,19 @@
         .place-rating { background: #F2F2F7; color: var(--ios-orange); padding: 4px 10px; border-radius: 50px; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-left: 8px;}
         .place-info { font-size: 14px; color: #8E8E93; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
         
+        /* 提示框顏色 */
         .parent-tips { background-color: #F0F8FF; color: #004085; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; margin-top: 12px; }
-        .food-tips { background-color: #FFF0F0; color: #C02520; }
-        .snack-tips { background-color: #F3E5F5; color: #7B1FA2; } /* 小吃專用紫色筆記 */
-        
+        .food-tips { background-color: #E8F5E9; color: #2E7D32; } /* 親子餐改綠色系 */
+        .snack-tips { background-color: #F3E5F5; color: #7B1FA2; }
+        .bbq-tips { background-color: #FFEBEE; color: #C62828; } /* 燒肉紅色系 */
+        .bar-tips { background-color: #E8EAF6; color: #283593; } /* 居酒屋深藍系 */
+
         .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
         .tag { background: #F2F2F7; color: #8E8E93; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 100px; }
         .open-now { color: var(--ios-green); }
         .closed-now { color: var(--ios-red); }
         .empty-state { text-align: center; margin-top: 40px; color: #C7C7CC; }
-        #debug-info { text-align: center; font-size: 10px; color: #ff3b30; margin-top: 20px; opacity: 0.7; word-break: break-all; }
+        #debug-info { text-align: center; font-size: 10px; color: #ff3b30; margin-top: 20px; opacity: 0.7; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -64,13 +101,15 @@
 </header>
 
 <div class="controls-container">
-    <div class="btn-group">
+    <div class="btn-scroll-wrapper">
         <button id="btn-fun" onclick="switchMode('fun')">🎡 找好玩</button>
-        <button id="btn-food" onclick="switchMode('food')">🐶 親子餐</button>
-        <button id="btn-snack" onclick="switchMode('snack')">🍜 找小吃</button>
+        <button id="btn-food" onclick="switchMode('food')">👶 親子餐廳</button>
+        <button id="btn-bbq" onclick="switchMode('bbq')">🔥 燒肉火鍋</button>
+        <button id="btn-bar" onclick="switchMode('bar')">🍺 居酒屋</button>
+        <button id="btn-snack" onclick="switchMode('snack')">🍜 在地小吃</button>
     </div>
-    <div id="status">Ready to explore</div>
 </div>
+<div id="status">Ready to explore</div>
 
 <div class="map-wrapper">
     <div id="map"></div>
@@ -78,7 +117,7 @@
 
 <div class="results-container" id="results">
     <div class="empty-state">
-        <p>點選上方按鈕開始探索</p>
+        <p>左右滑動上方按鈕<br>選擇想去的地方</p>
     </div>
 </div>
 
@@ -92,7 +131,6 @@
     let currentMarkers = []; 
     let currentMode = null; 
 
-    // 初始化地圖
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
@@ -117,22 +155,18 @@
 
     function switchMode(mode) {
         currentMode = mode;
-        const btnFun = document.getElementById('btn-fun');
-        const btnFood = document.getElementById('btn-food');
-        const btnSnack = document.getElementById('btn-snack');
+        const btns = ['btn-fun', 'btn-food', 'btn-bbq', 'btn-bar', 'btn-snack'];
         
-        // UI 重置
+        // 重置 UI
         document.getElementById('debug-info').innerText = ""; 
         document.getElementById('results').innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
         clearMarkers();
 
-        // 清除所有按鈕狀態
-        btnFun.className = ''; btnFood.className = ''; btnSnack.className = '';
-
-        // 活化當前按鈕
-        if (mode === 'fun') btnFun.classList.add('active-fun');
-        else if (mode === 'food') btnFood.classList.add('active-food');
-        else if (mode === 'snack') btnSnack.classList.add('active-snack');
+        // 更新按鈕狀態
+        btns.forEach(id => {
+            document.getElementById(id).className = ''; // 清除所有 class
+        });
+        document.getElementById('btn-' + mode).classList.add('active-' + mode);
         
         startExplore();
     }
@@ -149,13 +183,12 @@
                     statusDiv.innerHTML = "Searching nearby...";
                     await initMap(userLocation.lat, userLocation.lng);
                     
-                    if (currentMode === 'fun') {
-                        await searchFunPlaces(userLocation);
-                    } else if (currentMode === 'food') {
-                        await searchFoodWithFallback(userLocation); // 親子
-                    } else if (currentMode === 'snack') {
-                        await searchLocalSnacks(userLocation); // 新增：找小吃
-                    }
+                    if (currentMode === 'fun') await searchFunPlaces(userLocation);
+                    else if (currentMode === 'food') await searchFoodWithFallback(userLocation, "親子餐廳 寵物友善 家庭餐廳");
+                    else if (currentMode === 'bbq') await searchFoodWithFallback(userLocation, "燒肉 火鍋 麻辣鍋 壽喜燒");
+                    else if (currentMode === 'bar') await searchFoodWithFallback(userLocation, "居酒屋 酒吧 餐酒館");
+                    else if (currentMode === 'snack') await searchLocalSnacks(userLocation);
+                    
                     statusDiv.innerHTML = "Done";
                 },
                 (error) => { statusDiv.innerHTML = "❌ GPS Error"; }
@@ -171,23 +204,21 @@
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
                 locationRestriction: { center: location, radius: 1500 },
                 includedPrimaryTypes: ['tourist_attraction', 'park', 'museum', 'shopping_mall', 'zoo', 'aquarium'],
-                maxResultCount: 10,
+                maxResultCount: 15,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
                 language: 'zh-TW',
             };
             const { places } = await Place.searchNearby(request);
             displayResults(places, 'fun');
-        } catch (e) {
-            handleError(e, "Fun Error");
-        }
+        } catch (e) { handleError(e, "Fun Error"); }
     }
 
-    // 🐶 找親子 (維持原本邏輯)
-    async function searchFoodWithFallback(location) {
+    // 通用搜尋器 (親子 / 燒肉 / 居酒屋 都用這個)
+    async function searchFoodWithFallback(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         try {
             const request = {
-                textQuery: "親子餐廳 寵物友善", 
+                textQuery: query, 
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
                 locationBias: { center: location, radius: 1000 },
                 maxResultCount: 15,
@@ -195,51 +226,43 @@
             };
             const { places } = await Place.searchByText(request);
             if (places && places.length > 0) {
-                displayResults(places, 'food');
+                displayResults(places, currentMode);
                 return;
             }
-        } catch(e) { console.warn("Fallback trigger", e); }
+        } catch(e) { console.warn("Primary search failed", e); }
 
-        // 備案
+        // 備案 (如果關鍵字找不到，用附近熱門餐廳補)
         try {
-            document.getElementById('status').innerHTML = "切換備案搜尋...";
+            document.getElementById('status').innerHTML = "擴大搜尋範圍...";
             const { SearchNearbyRankPreference } = await google.maps.importLibrary("places");
             const fallbackRequest = {
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
                 locationRestriction: { center: location, radius: 1000 },
-                includedPrimaryTypes: ['restaurant', 'cafe', 'bakery'], 
+                includedPrimaryTypes: ['restaurant'], 
                 maxResultCount: 15,
                 rankPreference: SearchNearbyRankPreference.POPULARITY,
                 language: 'zh-TW',
             };
             const { places } = await Place.searchNearby(fallbackRequest);
-            displayResults(places, 'food_fallback');
+            displayResults(places, currentMode);
         } catch(e) { handleError(e, "Fallback Error"); }
     }
 
-    // 🍜 新增：找小吃 (老店、必吃、排隊美食)
+    // 🍜 找小吃
     async function searchLocalSnacks(location) {
         const { Place } = await google.maps.importLibrary("places");
         try {
-            // 關鍵字魔法：結合「必吃」、「小吃」、「老店」
-            // 這樣不管在台灣(滷肉飯)或日本(拉麵)都通用
             const request = {
-                textQuery: "必吃美食 在地小吃 老店 排隊名店", 
+                textQuery: "必吃美食 在地小吃 老店 珍珠奶茶 茶館 甜點", 
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress'],
                 locationBias: { center: location, radius: 1000 },
                 maxResultCount: 15,
-                language: 'zh-TW', // 強制中文結果
-                minRating: 4.0 // 既然要找知名的，就過濾掉 4.0 以下的雷店
+                language: 'zh-TW', 
+                minRating: 4.0
             };
             const { places } = await Place.searchByText(request);
-            if (places && places.length > 0) {
-                displayResults(places, 'snack');
-            } else {
-                document.getElementById('results').innerHTML = '<div class="empty-state"><p>附近沒看到知名排隊店，試試別處？</p></div>';
-            }
-        } catch (e) {
-            handleError(e, "Snack Error");
-        }
+            displayResults(places, 'snack');
+        } catch (e) { handleError(e, "Snack Error"); }
     }
 
     function displayResults(places, mode) {
@@ -250,7 +273,7 @@
         const activePlaces = places.filter(p => p.businessStatus === 'OPERATIONAL' || !p.businessStatus);
 
         if (!activePlaces || activePlaces.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有營業中的地點</p></div>';
+            resultsDiv.innerHTML = '<div class="empty-state"><p>附近沒有符合的營業地點</p></div>';
             return;
         }
 
@@ -259,18 +282,18 @@
             const rating = place.rating;
             const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "";
             const types = place.types || [];
-            
             let openStatus = "<span class='open-now'>Open</span>";
-
             const advice = analyzeForParents(types, rating, mode);
             
-            // 決定卡片樣式
+            // 根據模式換顏色和圖示
             let tipClass = 'parent-tips';
             let icon = '📍';
             
             if (mode === 'fun') { icon = '🎡'; }
-            else if (mode.includes('food')) { tipClass += ' food-tips'; icon = '🐶'; }
-            else if (mode === 'snack') { tipClass += ' snack-tips'; icon = '🍜'; } // 紫色小吃樣式
+            else if (mode === 'food') { tipClass += ' food-tips'; icon = '👶'; }
+            else if (mode === 'bbq') { tipClass += ' bbq-tips'; icon = '🔥'; }
+            else if (mode === 'bar') { tipClass += ' bar-tips'; icon = '🍺'; }
+            else if (mode === 'snack') { tipClass += ' snack-tips'; icon = '🍜'; }
 
             const delay = index * 0.1;
             const card = document.createElement('div');
@@ -290,34 +313,40 @@
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`, '_blank');
             };
             resultsDiv.appendChild(card);
-            
-            new google.maps.Marker({
-                position: place.location, map: map, title: name,
-            });
+            new google.maps.Marker({ position: place.location, map: map, title: name });
         });
     }
 
+    // AI 導遊分析邏輯 (針對不同模式)
     function analyzeForParents(types, rating, mode) {
         let advice = "";
         
-        if (mode === 'snack') {
-            advice = "🍽️ **在地人氣/知名小吃！**";
-            if (rating > 4.5) advice += " 評分極高，可能需要排隊。";
-            if (types.includes('meal_takeaway')) advice += " 可考慮外帶回飯店吃。";
-            else advice += " 用餐環境可能較擁擠，留意小孩安全。";
-        } else if (mode.includes('food')) {
-            advice = mode === 'food' ? "符合親子/寵物友善搜尋結果。" : "附近熱門餐廳 (一般模式)。";
-            if (rating > 4.5) advice += " 建議訂位。";
-        } else {
+        if (mode === 'bbq') {
+            advice = "🔥 **大人的享受！** 炭火/熱湯請注意 3 歲小孩安全。";
+            if (rating > 4.5) advice += " 熱門店建議訂位。";
+            if (types.includes('meal_takeaway')) advice += " 如太擠可考慮外帶。";
+        } 
+        else if (mode === 'bar') {
+            advice = "🍺 **放鬆一下！** 請留意店內是否禁菸。";
+            if (types.includes('izakaya')) advice += " 居酒屋氣氛較熱鬧，適合不怕吵的小孩。";
+        }
+        else if (mode === 'food') {
+            advice = "適合帶小孩的餐廳。";
+            if (types.includes('cafe')) advice = "適合下午茶休息。";
+        }
+        else if (mode === 'snack') {
+            advice = "在地人氣小吃！";
+            if (rating > 4.5) advice += " 可能需要排隊。";
+        }
+        else { // Fun
             if (types.includes('park')) advice = "3歲寶最愛！盡情放電。";
-            else if (types.includes('museum') || types.includes('aquarium')) advice = "室內安全，好奇寶寶時間。";
             else advice = "熱門景點，請留意人潮。";
         }
         return advice;
     }
 
     function formatType(type) {
-        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食', 'bakery': '烘焙', 'meal_takeaway': '外帶' };
+        const dict = { 'tourist_attraction': '景點', 'park': '公園', 'restaurant': '餐廳', 'cafe': '咖啡', 'store': '商店', 'food': '美食', 'bakery': '烘焙', 'bar': '酒吧', 'night_club': '夜店' };
         return dict[type] || '地點';
     }
     
