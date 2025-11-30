@@ -6,6 +6,15 @@
     <title>Travel OS Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
+        /* 🔤 1. 在這裡引入您的自訂字體 */
+        /* 請確保 UoqMunThenKhung-Regular.ttf 跟此 html 檔在同一層資料夾 */
+        @font-face {
+            font-family: 'MyCustomTitleFont';
+            src: url('UoqMunThenKhung-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         /* 🎨 核心樣式 */
         :root {
             --bg-color: #F2F2F7;
@@ -67,7 +76,13 @@
             box-shadow: var(--shadow);
             position: sticky; top: 16px; z-index: 100;
         }
-        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
+        
+        /* 🔤 套用自訂字體到標題 */
+        header h1 { 
+            margin: 0; font-size: 22px; font-weight: normal; 
+            font-family: 'MyCustomTitleFont', 'Inter', sans-serif; /* 這裡套用 */
+            letter-spacing: 1px;
+        }
         
         .weather-badge {
             font-size: 13px; font-weight: 600; color: var(--text-secondary);
@@ -103,7 +118,7 @@
         }
         .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
 
-        /* Filter Toggle (新功能: 只顯示營業中) */
+        /* Filter Toggle */
         .filter-container {
             padding: 0 24px 12px 24px;
             display: flex; justify-content: flex-end; align-items: center;
@@ -127,12 +142,12 @@
         .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
         #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); transition: border-color 0.5s ease; }
         
-        /* Cards & Image (新功能: 封面照片) */
+        /* Cards & Image */
         .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
         .place-card { 
             background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
-            padding: 0; /* 改為0以讓圖片滿版 */
+            padding: 0;
             margin-bottom: 24px; box-shadow: var(--shadow); 
             animation: fadeInUp 0.5s ease forwards; overflow: hidden;
             display: flex; flex-direction: column;
@@ -155,7 +170,14 @@
         .place-content { padding: 20px; }
         
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .place-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 70%; }
+        
+        /* 🔤 套用自訂字體到卡片標題 */
+        .place-name { 
+            font-size: 21px; font-weight: normal; 
+            color: var(--text-primary); line-height: 1.3; width: 70%; 
+            font-family: 'MyCustomTitleFont', 'Inter', sans-serif; /* 這裡套用 */
+            letter-spacing: 0.5px;
+        }
         
         .place-rating-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
         .rating-box { padding: 4px 8px; border-radius: 8px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
@@ -241,7 +263,7 @@
     let userLocation = null;
     let currentMarkers = [];
     let currentCircle = null;
-    let lastFetchedPlaces = []; // 用來儲存上次搜尋結果，方便做篩選
+    let lastFetchedPlaces = []; 
     
     // 自動深色模式偵測
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -343,10 +365,9 @@
         });
     }
 
-    // 🔍 篩選器開關邏輯
     function toggleFilter() {
         if (lastFetchedPlaces.length > 0) {
-            displayResults(lastFetchedPlaces); // 重新渲染，不需重打 API
+            displayResults(lastFetchedPlaces); 
         }
     }
 
@@ -427,7 +448,6 @@
         try {
             let request = {
                 textQuery: query,
-                // 🖼️ 新增 photos 欄位
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel', 'currentOpeningHours', 'photos'],
                 maxResultCount: 20,
                 language: 'zh-TW',
@@ -439,7 +459,7 @@
             const { places } = await Place.searchByText(request);
             
             if (places && places.length > 0) {
-                lastFetchedPlaces = places; // 存起來給篩選器用
+                lastFetchedPlaces = places;
                 displayResults(places);
             } else {
                 document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>附近沒有找到相關地點。</p></div>';
@@ -454,15 +474,11 @@
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = "";
         
-        // 🔍 檢查是否開啟篩選
         const filterOpen = document.getElementById('openFilter').checked;
-
         let visibleCount = 0;
 
         places.forEach((place, index) => {
             const isOpen = place.businessStatus === 'OPERATIONAL';
-            
-            // 如果開了篩選器，且店家沒營業，就跳過
             if (filterOpen && !isOpen) return;
 
             visibleCount++;
@@ -473,10 +489,9 @@
             address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
             
-            // 🖼️ 處理圖片
+            // 🖼️ 圖片
             let imageHtml = `<div class="place-img-placeholder">📷</div>`;
             if (place.photos && place.photos.length > 0) {
-                // 取得第一張照片，寬度限制 400px 加速載入
                 const photoUrl = place.photos[0].getURI({maxWidth: 400});
                 imageHtml = `<img src="${photoUrl}" class="place-img" alt="${name}">`;
             }
@@ -499,7 +514,7 @@
                 }
             }
 
-            // 營業時間文字
+            // 時間
             let hoursHtml = "";
             if (place.currentOpeningHours && place.currentOpeningHours.weekdayDescriptions) {
                 const dayIndex = new Date().getDay(); 
