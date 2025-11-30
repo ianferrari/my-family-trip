@@ -97,7 +97,7 @@
         .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
         
-        /* 💬 評論區塊 (新) */
+        /* 💬 評論區塊 */
         .review-box { 
             background: rgba(0,0,0,0.2); padding: 14px; border-radius: 16px; 
             font-size: 13px; line-height: 1.5; color: #ddd; margin-bottom: 16px;
@@ -164,16 +164,19 @@
     let currentMarkers = [];
     let currentCircle = null;
 
-    // 🌟 修正後的分類：關鍵字更廣泛，確保搜尋到「附近」的小點
+    // 🌟 設定檔：已整合您的所有需求
     const CATEGORIES = {
         'fun': [
-            { name: "附近公園", query: "公園", icon: "🛝" }, 
+            { name: "附近公園", query: "公園", icon: "🛝" },
+            // 2. 景點移到第二位
+            { name: "觀光景點", query: "觀光景點 打卡景點", icon: "📸" },
             { name: "百貨購物", query: "百貨公司 購物中心", icon: "🛍️" },
             { name: "室內遊樂", query: "室內遊樂園 親子館 遊戲場", icon: "🧩" },
-            { name: "景點", query: "觀光景點", icon: "📸" },
             { name: "書店圖館", query: "書店 圖書館", icon: "📚" }
         ],
         'food': [
+            // 1. 新增手搖飲
+            { name: "手搖飲料", query: "手搖飲 飲料店 50嵐 可不可", icon: "🧋" },
             { name: "親子餐廳", query: "親子餐廳", icon: "👶" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "🍰" },
             { name: "在地小吃", query: "小吃 麵店 便當", icon: "🍜" },
@@ -181,14 +184,16 @@
             { name: "早午餐", query: "早午餐", icon: "🥪" }
         ],
         'medical': [
-            // 關鍵字包含一般診所、內科、家醫科
-            { name: "一般診所", query: "診所 家醫科 內科 耳鼻喉科", icon: "🩺" },
+            { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" },
+            // 2. 新增耳鼻喉科
+            { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
             { name: "小兒科", query: "小兒科", icon: "👶" },
             { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
-            { name: "藥局", query: "藥局", icon: "💊" }
+            { name: "藥局", query: "藥局", icon: "💊" },
+            // 2. 新增寵物醫院 (放在最右邊)
+            { name: "寵物醫院", query: "動物醫院 獸醫 24小時動物醫院", icon: "🐶" }
         ],
         'life': [
-            // 關鍵字包含魚中魚等賣場
             { name: "動物水族", query: "寵物店 水族館 魚中魚", icon: "🐠" },
             { name: "便利超商", query: "便利商店 7-11 全家", icon: "🏪" },
             { name: "停車場", query: "停車場", icon: "🅿️" },
@@ -224,8 +229,8 @@
         btnElement.classList.add('active');
         
         const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = "📡 SCANNING NEARBY...";
-        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#666;"><p>Triangulating data...</p></div>';
+        statusDiv.innerHTML = "📡 SCANNING...";
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#666;"><p>Processing...</p></div>';
         clearMarkers();
 
         if (navigator.geolocation) {
@@ -234,12 +239,13 @@
                     userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
                     statusDiv.innerHTML = `TARGET: ${query}`;
                     await initMap(userLocation.lat, userLocation.lng);
+                    // 執行搜尋 (含自動重試機制)
                     await performSearch(userLocation, query);
                     statusDiv.innerHTML = "SCAN COMPLETE";
                 },
                 (error) => {
                     statusDiv.innerHTML = "GPS ERROR";
-                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:#FF453A;"><h3>Location Required</h3><p>Please enable GPS to find nearby places.</p></div>';
+                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:#FF453A;"><h3>Location Denied</h3><p>Please enable GPS permissions.</p></div>';
                 }
             );
         } else { statusDiv.innerHTML = "SYSTEM ERROR"; }
@@ -263,7 +269,7 @@
                 disableDefaultUI: true, gestureHandling: "greedy", styles: darkMapStyle
             });
         } else {
-            map.setCenter(center); map.setZoom(15); map.setOptions({ styles: darkMapStyle });
+            map.setCenter(center); map.setZoom(15);
         }
 
         if (currentCircle) currentCircle.setMap(null);
@@ -279,34 +285,59 @@
         currentMarkers = [];
     }
 
-    // 🌟 核心搜尋邏輯：強制距離優先 + 讀取評論
-    async function performSearch(location, query) {
+    // 🌟 強化版搜尋函數：具備錯誤捕捉與自動降級功能
+    async function performSearch(location, query, retryMode = false) {
         const { Place } = await google.maps.importLibrary("places");
         const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
 
         try {
-            const request = {
-                textQuery: query, 
-                // ⚠️ 增加 'reviews' 欄位以取得最新評論
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
-                // ⚠️ 強制使用 DISTANCE (距離) 排序
-                rankPreference: SearchByTextRankPreference.DISTANCE,
-                locationBias: { center: location }, 
+            let request = {
+                textQuery: query,
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
                 maxResultCount: 20,
                 language: 'zh-TW',
-                isOpenNow: false // 設為 true 可只找營業中的，設為 false 找所有
+                locationBias: { center: location },
+                isOpenNow: false // 找所有地點，不只營業中
             };
-            
+
+            // 第一次嘗試：嚴格的距離排序 (需要 Places API New + Billing)
+            if (!retryMode) {
+                request.rankPreference = SearchByTextRankPreference.DISTANCE;
+            } else {
+                // 如果失敗，第二次嘗試：使用預設相關性排序 (當作備案)
+                console.log("Switching to relevance search...");
+                request.locationBias = { center: location, radius: 2000 };
+            }
+
             const { places } = await Place.searchByText(request);
             
             if (places && places.length > 0) {
                 displayResults(places, query);
             } else {
-                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>No nearby places found.</p></div>';
+                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>No results found nearby.</p></div>';
             }
         } catch (e) {
-            console.error(e);
-            document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#FF453A;"><p>API Error. Check Console.</p></div>';
+            console.error("Search failed:", e);
+            
+            // 🛡️ 自動錯誤處理機制
+            if (!retryMode) {
+                // 第一次失敗，自動重試「普通模式」
+                await performSearch(location, query, true);
+            } else {
+                // 如果連普通模式都失敗，顯示錯誤原因
+                let errorMsg = e.message || JSON.stringify(e);
+                let friendlyMsg = "API Connection Error";
+                
+                if (errorMsg.includes("IsNotEnabled")) friendlyMsg = "請至 Google Cloud 啟用 Places API (New)";
+                if (errorMsg.includes("Billing")) friendlyMsg = "API 需要啟用帳單功能 (Billing)";
+                
+                document.getElementById('results').innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#FF453A;">
+                        <h3>${friendlyMsg}</h3>
+                        <p style="font-size:11px; opacity:0.7; margin-top:10px">${errorMsg}</p>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -314,57 +345,43 @@
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = "";
         
-        // 雖然 API 已按距離排序，但我們過濾掉完全沒評分的可能較好(看需求)
-        // 這裡直接顯示
         places.forEach((place, index) => {
             const name = place.displayName || "Unknown";
             const rating = place.rating || 0;
-            const count = place.userRatingCount ? `(${place.userRatingCount})` : "(0)";
+            const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
             let address = place.formattedAddress || "";
             address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
             const isOpen = place.businessStatus === 'OPERATIONAL';
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
             
-            // ⚠️ 評分邏輯與評論抓取
             const isLowRating = rating > 0 && rating < 4.0;
             let reviewHtml = "";
             
-            // 抓取最新一則評論
+            // 處理評論顯示
             if (place.reviews && place.reviews.length > 0) {
-                const latestReview = place.reviews[0]; // 通常 API 會給最相關或最新的
-                const reviewText = latestReview.text || "無文字評論";
-                
+                const reviewText = place.reviews[0].text || "無文字評論";
                 if (isLowRating) {
-                    // 低分警示樣式
                     reviewHtml = `
                         <div class="review-box bad">
                             <span class="review-title" style="color:#FF453A">⚠️ 注意：評分偏低 (${rating})</span>
-                            <span class="review-text">最新評論：「${reviewText}」</span>
-                        </div>
-                    `;
+                            <span class="review-text">"${reviewText}"</span>
+                        </div>`;
                 } else {
-                    // 正常好評樣式
                     reviewHtml = `
                         <div class="review-box good">
-                            <span class="review-title" style="color:#32D74B">💬 最新相關評價</span>
-                            <span class="review-text">「${reviewText}」</span>
-                        </div>
-                    `;
+                            <span class="review-title" style="color:#32D74B">💬 最新評價</span>
+                            <span class="review-text">"${reviewText}"</span>
+                        </div>`;
                 }
             } else {
-                // 沒有評論時
-                if (isLowRating) {
-                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:#FF453A">⚠️ 此地點評分低於 4.0，請留意。</span></div>`;
-                } else {
-                    reviewHtml = `<div class="review-box" style="border-left-color:#888"><span class="review-title">暫無文字評論</span></div>`;
+                 if (isLowRating) {
+                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:#FF453A">⚠️ 評分低於 4.0，請留意。</span></div>`;
                 }
             }
 
-            // 建立卡片
             const card = document.createElement('div');
             card.className = 'place-card';
             card.style.animationDelay = `${index * 0.05}s`;
-            
             const ratingClass = isLowRating ? 'rating-low' : 'rating-high';
             
             card.innerHTML = `
@@ -379,24 +396,16 @@
                     <div>${isOpen ? '<span class="status-dot" style="background:#32D74B"></span>營業中' : '<span class="status-dot" style="background:#FF453A"></span>休息中'}</div>
                     <div>• ${address}</div>
                 </div>
-                
                 ${reviewHtml}
-                
-                <a href="${mapUrl}" target="_blank" class="action-btn">
-                    NAVIGATE ➜
-                </a>
+                <a href="${mapUrl}" target="_blank" class="action-btn">NAVIGATE ➜</a>
             `;
-            
             resultsDiv.appendChild(card);
             
-            // 地圖標記
             const marker = new google.maps.Marker({
                 position: place.location, map: map, title: name,
                 label: { text: (index + 1).toString(), color: "black", fontWeight: "bold" }
             });
-            marker.addListener("click", () => {
-                card.scrollIntoView({ behavior: "smooth", block: "center" });
-            });
+            marker.addListener("click", () => card.scrollIntoView({ behavior: "smooth", block: "center" }));
             currentMarkers.push(marker);
         });
     }
