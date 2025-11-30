@@ -3,53 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS Pro - Neural</title>
+    <title>Travel OS Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
+        /* 🎨 變數定義：深色模式 (預設) */
         :root {
-            --bg-dark: #000000;
+            --bg-color: #000000;
+            --bg-image: radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%), radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
             --glass-panel: rgba(30, 30, 35, 0.75);
             --glass-border: rgba(255, 255, 255, 0.15);
-            --neon-accent: #0A84FF;
-            --neon-warn: #FF453A;
-            --neon-success: #32D74B;
             --text-primary: #FFFFFF;
             --text-secondary: #9898A0;
+            --neon-accent: #0A84FF;
+            --neon-success: #32D74B;
+            --neon-warn: #FF453A;
             --card-radius: 24px;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --chip-bg: rgba(30,30,35, 0.4);
+            --header-bg: rgba(20, 20, 20, 0.6);
+        }
+
+        /* ☀️ 淺色模式變數 */
+        [data-theme="light"] {
+            --bg-color: #F2F2F7;
+            --bg-image: none;
+            --glass-panel: #FFFFFF;
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --text-primary: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --neon-accent: #007AFF;
+            --neon-success: #34C759;
+            --neon-warn: #FF3B30;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --chip-bg: #FFFFFF;
+            --header-bg: rgba(255, 255, 255, 0.85);
         }
 
         body { 
             font-family: 'Inter', -apple-system, sans-serif; 
-            background-color: var(--bg-dark); 
-            background-image: 
-                radial-gradient(circle at 0% 0%, #0f1c4d 0%, transparent 60%),
-                radial-gradient(circle at 100% 100%, #4a0e0e 0%, transparent 60%);
+            background-color: var(--bg-color); 
+            background-image: var(--bg-image);
             background-attachment: fixed;
             margin: 0; padding: 0; 
             color: var(--text-primary); 
             -webkit-tap-highlight-color: transparent; 
             padding-bottom: 100px;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
-        /* 🌀 Header */
+        /* 🌀 Header & Weather */
         header { 
-            background: rgba(20, 20, 20, 0.6); 
+            background: var(--header-bg); 
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px);
             margin: 16px; padding: 16px 24px; 
             border-radius: 40px; border: 1px solid var(--glass-border);
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow);
             position: sticky; top: 16px; z-index: 100;
+            transition: all 0.3s ease;
         }
-        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; background: linear-gradient(90deg, #fff, #8E8E93); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        header p { margin: 2px 0 0; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
-        .header-dot { width: 8px; height: 8px; background: var(--neon-success); border-radius: 50%; box-shadow: 0 0 10px var(--neon-success); }
+        header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0.5px; }
         
+        /* 天氣小卡 */
+        .weather-badge {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--chip-bg); border: 1px solid var(--glass-border);
+            padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+        }
+        
+        /* 🌗 模式切換按鈕 */
+        .theme-toggle {
+            position: fixed; top: 22px; right: 20px; z-index: 101;
+            background: var(--glass-panel); border: 1px solid var(--glass-border);
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 20px; cursor: pointer; box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
         /* 🔘 Tabs */
         .main-tabs { 
             display: flex; margin: 10px 16px; 
-            background: rgba(40, 40, 45, 0.5); 
+            background: var(--chip-bg); 
             padding: 6px; border-radius: 32px; 
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px);
@@ -57,9 +93,9 @@
         .tab-btn { 
             flex: 1; border: none; background: transparent; color: var(--text-secondary); 
             padding: 12px 0; border-radius: 26px; font-size: 13px; font-weight: 600; 
-            cursor: pointer; transition: all 0.4s; position: relative;
+            cursor: pointer; transition: all 0.3s;
         }
-        .tab-btn.active { background: rgba(60, 60, 65, 0.8); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .tab-btn.active { background: var(--glass-panel); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         
         /* 💊 Chips */
         .sub-nav-container { margin: 0; overflow: hidden; padding: 10px 0; }
@@ -67,40 +103,40 @@
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
 
         .chip-btn { 
-            border: 1px solid var(--glass-border); background: rgba(30,30,35, 0.4); color: #fff;
+            border: 1px solid var(--glass-border); background: var(--chip-bg); color: var(--text-primary);
             padding: 10px 20px; font-size: 13px; font-weight: 500; border-radius: 100px; 
             white-space: nowrap; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px);
         }
-        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
+        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: 700; }
 
         /* 🗺️ Map */
         .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
-        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid var(--glass-border); }
+        #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); }
         
         /* 🃏 Cards */
         .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
         .place-card { 
             background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
-            padding: 24px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
-            animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); 
+            animation: fadeInUp 0.5s ease forwards;
+            transition: background 0.3s ease;
         }
         
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .place-name { font-size: 19px; font-weight: 700; color: #fff; line-height: 1.3; width: 75%; }
+        .place-name { font-size: 19px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 75%; }
         
-        /* 評分標籤 */
         .place-rating { padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; }
-        .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); box-shadow: 0 0 10px rgba(50, 215, 75, 0.1); }
-        .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); box-shadow: 0 0 10px rgba(255, 69, 58, 0.1); border: 1px solid rgba(255, 69, 58, 0.3); }
+        .rating-high { background: rgba(50, 215, 75, 0.15); color: var(--neon-success); }
+        .rating-low { background: rgba(255, 69, 58, 0.15); color: var(--neon-warn); border: 1px solid rgba(255, 69, 58, 0.3); }
 
         .place-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
         
         /* 💬 評論區塊 */
         .review-box { 
-            background: rgba(0,0,0,0.2); padding: 14px; border-radius: 16px; 
-            font-size: 13px; line-height: 1.5; color: #ddd; margin-bottom: 16px;
+            background: rgba(128,128,128,0.1); padding: 14px; border-radius: 16px; 
+            font-size: 13px; line-height: 1.5; color: var(--text-primary); margin-bottom: 16px;
             border-left: 3px solid;
         }
         .review-box.good { border-color: var(--neon-success); }
@@ -111,25 +147,28 @@
 
         .action-btn {
             display: block; width: 100%; text-align: center; 
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; padding: 12px 0; border-radius: 16px;
+            background: rgba(128,128,128,0.1); border: 1px solid rgba(128,128,128,0.2);
+            color: var(--text-primary); padding: 12px 0; border-radius: 16px;
             font-size: 13px; font-weight: 600; text-decoration: none; transition: all 0.2s;
         }
-        .action-btn:hover { background: var(--neon-accent); border-color: var(--neon-accent); }
+        .action-btn:hover { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; }
 
-        #status { text-align: center; margin: 10px 0; font-size: 12px; color: rgba(255,255,255,0.4); letter-spacing: 1px; }
+        #status { text-align: center; margin: 10px 0; font-size: 12px; color: var(--text-secondary); letter-spacing: 1px; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .gm-style-cc { display: none !important; }
     </style>
 </head>
-<body>
+<body data-theme="dark">
+
+<div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</div>
 
 <header>
     <div>
-        <h1>Travel OS <span style="font-weight:300; opacity:0.7">Neural</span></h1>
-        <p>Proximity & Review System</p>
+        <h1>Travel OS</h1>
+        <div class="weather-badge" id="weather-badge">
+            📡 定位中...
+        </div>
     </div>
-    <div class="header-dot"></div>
 </header>
 
 <div class="main-tabs">
@@ -164,33 +203,29 @@
     let currentMarkers = [];
     let currentCircle = null;
 
-    // 🌟 設定檔：已整合您的所有需求
+    // 🌟 最終設定檔
     const CATEGORIES = {
         'fun': [
             { name: "附近公園", query: "公園", icon: "🛝" },
-            // 2. 景點移到第二位
             { name: "觀光景點", query: "觀光景點 打卡景點", icon: "📸" },
-            { name: "百貨購物", query: "百貨公司 購物中心", icon: "🛍️" },
+            { name: "百貨購物", query: "百貨公司 購物中心 商場", icon: "🛍️" },
             { name: "室內遊樂", query: "室內遊樂園 親子館 遊戲場", icon: "🧩" },
             { name: "書店圖館", query: "書店 圖書館", icon: "📚" }
         ],
         'food': [
-            // 1. 新增手搖飲
             { name: "手搖飲料", query: "手搖飲 飲料店 50嵐 可不可", icon: "🧋" },
-            { name: "親子餐廳", query: "親子餐廳", icon: "👶" },
+            { name: "寵物友善", query: "寵物友善餐廳 寵物餐廳 貓咪餐廳", icon: "🐾" },
+            { name: "親子餐廳", query: "親子餐廳 親子友善", icon: "👶" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "🍰" },
             { name: "在地小吃", query: "小吃 麵店 便當", icon: "🍜" },
-            { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" },
-            { name: "早午餐", query: "早午餐", icon: "🥪" }
+            { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" }
         ],
         'medical': [
             { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" },
-            // 2. 新增耳鼻喉科
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
             { name: "小兒科", query: "小兒科", icon: "👶" },
             { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
             { name: "藥局", query: "藥局", icon: "💊" },
-            // 2. 新增寵物醫院 (放在最右邊)
             { name: "寵物醫院", query: "動物醫院 獸醫 24小時動物醫院", icon: "🐶" }
         ],
         'life': [
@@ -202,7 +237,66 @@
     };
 
     let currentCategory = 'fun';
-    window.onload = () => { renderSubNav('fun'); };
+    window.onload = () => { 
+        renderSubNav('fun'); 
+        // 嘗試取得天氣 (預設會先等待定位)
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                fetchWeather(lat, lng);
+            });
+        }
+    };
+
+    // 🌗 深淺色模式切換邏輯
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        
+        if (isDark) {
+            body.setAttribute('data-theme', 'light');
+            btn.innerHTML = '☀️';
+            if(map) map.setOptions({ styles: [] }); // 恢復淺色地圖
+        } else {
+            body.setAttribute('data-theme', 'dark');
+            btn.innerHTML = '🌙';
+            if(map) map.setOptions({ styles: darkMapStyle }); // 使用深色地圖
+        }
+    }
+
+    // 🌤️ 取得天氣 (Open-Meteo API)
+    async function fetchWeather(lat, lng) {
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+            const data = await res.json();
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            let icon = "☁️";
+            
+            // 簡易天氣代碼轉換
+            if(code <= 1) icon = "☀️";
+            else if(code <= 3) icon = "⛅";
+            else if(code <= 60) icon = "🌧️";
+            else icon = "⛈️";
+
+            document.getElementById('weather-badge').innerHTML = `${icon} ${temp}°C`;
+        } catch(e) {
+            console.error("Weather error", e);
+            document.getElementById('weather-badge').innerHTML = "無法取得天氣";
+        }
+    }
+
+    // 地圖深色樣式
+    const darkMapStyle = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+    ];
 
     function selectCategory(cat) {
         currentCategory = cat;
@@ -229,23 +323,25 @@
         btnElement.classList.add('active');
         
         const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = "📡 SCANNING...";
-        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:#666;"><p>Processing...</p></div>';
+        statusDiv.innerHTML = "📡 搜尋最近地點中...";
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>正在計算距離...</p></div>';
         clearMarkers();
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    // 順便更新天氣
+                    fetchWeather(userLocation.lat, userLocation.lng);
+                    
                     statusDiv.innerHTML = `TARGET: ${query}`;
                     await initMap(userLocation.lat, userLocation.lng);
-                    // 執行搜尋 (含自動重試機制)
                     await performSearch(userLocation, query);
                     statusDiv.innerHTML = "SCAN COMPLETE";
                 },
                 (error) => {
                     statusDiv.innerHTML = "GPS ERROR";
-                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:#FF453A;"><h3>Location Denied</h3><p>Please enable GPS permissions.</p></div>';
+                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:var(--neon-warn);"><h3>無法定位</h3><p>請允許瀏覽器使用位置權限。</p></div>';
                 }
             );
         } else { statusDiv.innerHTML = "SYSTEM ERROR"; }
@@ -254,22 +350,17 @@
     async function initMap(lat, lng) {
         const { Map } = await google.maps.importLibrary("maps");
         const center = { lat: lat, lng: lng };
-        const darkMapStyle = [
-            { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-            { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-            { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-            { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-            { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
-        ];
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
 
         if (!map) {
             map = new Map(document.getElementById("map"), {
                 center: center, zoom: 15, mapId: "DEMO_MAP_ID", 
-                disableDefaultUI: true, gestureHandling: "greedy", styles: darkMapStyle
+                disableDefaultUI: true, gestureHandling: "greedy",
+                styles: isDark ? darkMapStyle : [] 
             });
         } else {
             map.setCenter(center); map.setZoom(15);
+            map.setOptions({ styles: isDark ? darkMapStyle : [] });
         }
 
         if (currentCircle) currentCircle.setMap(null);
@@ -285,8 +376,8 @@
         currentMarkers = [];
     }
 
-    // 🌟 強化版搜尋函數：具備錯誤捕捉與自動降級功能
-    async function performSearch(location, query, retryMode = false) {
+    // 🌟 全域絕對距離 (Global Strict Distance)
+    async function performSearch(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
 
@@ -296,48 +387,30 @@
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews'],
                 maxResultCount: 20,
                 language: 'zh-TW',
-                locationBias: { center: location },
-                isOpenNow: false // 找所有地點，不只營業中
+                // ⚠️ 關鍵：所有類別強制使用距離優先，且不設定半徑
+                locationBias: { center: location }, 
+                rankPreference: SearchByTextRankPreference.DISTANCE, 
+                isOpenNow: false
             };
-
-            // 第一次嘗試：嚴格的距離排序 (需要 Places API New + Billing)
-            if (!retryMode) {
-                request.rankPreference = SearchByTextRankPreference.DISTANCE;
-            } else {
-                // 如果失敗，第二次嘗試：使用預設相關性排序 (當作備案)
-                console.log("Switching to relevance search...");
-                request.locationBias = { center: location, radius: 2000 };
-            }
 
             const { places } = await Place.searchByText(request);
             
             if (places && places.length > 0) {
                 displayResults(places, query);
             } else {
-                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>No results found nearby.</p></div>';
+                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>附近沒有找到相關地點。</p></div>';
             }
         } catch (e) {
             console.error("Search failed:", e);
+            let friendlyMsg = "連線錯誤";
+            if (e.message && e.message.includes("Billing")) friendlyMsg = "API 需啟用帳單功能";
             
-            // 🛡️ 自動錯誤處理機制
-            if (!retryMode) {
-                // 第一次失敗，自動重試「普通模式」
-                await performSearch(location, query, true);
-            } else {
-                // 如果連普通模式都失敗，顯示錯誤原因
-                let errorMsg = e.message || JSON.stringify(e);
-                let friendlyMsg = "API Connection Error";
-                
-                if (errorMsg.includes("IsNotEnabled")) friendlyMsg = "請至 Google Cloud 啟用 Places API (New)";
-                if (errorMsg.includes("Billing")) friendlyMsg = "API 需要啟用帳單功能 (Billing)";
-                
-                document.getElementById('results').innerHTML = `
-                    <div style="text-align:center; padding:30px; color:#FF453A;">
-                        <h3>${friendlyMsg}</h3>
-                        <p style="font-size:11px; opacity:0.7; margin-top:10px">${errorMsg}</p>
-                    </div>
-                `;
-            }
+            document.getElementById('results').innerHTML = `
+                <div style="text-align:center; padding:30px; color:var(--neon-warn);">
+                    <h3>${friendlyMsg}</h3>
+                    <p style="font-size:11px; opacity:0.7; margin-top:10px">請檢查 API Key 設定</p>
+                </div>
+            `;
         }
     }
 
@@ -357,25 +430,24 @@
             const isLowRating = rating > 0 && rating < 4.0;
             let reviewHtml = "";
             
-            // 處理評論顯示
             if (place.reviews && place.reviews.length > 0) {
                 const reviewText = place.reviews[0].text || "無文字評論";
                 if (isLowRating) {
                     reviewHtml = `
                         <div class="review-box bad">
-                            <span class="review-title" style="color:#FF453A">⚠️ 注意：評分偏低 (${rating})</span>
+                            <span class="review-title" style="color:var(--neon-warn)">⚠️ 注意：評分偏低 (${rating})</span>
                             <span class="review-text">"${reviewText}"</span>
                         </div>`;
                 } else {
                     reviewHtml = `
                         <div class="review-box good">
-                            <span class="review-title" style="color:#32D74B">💬 最新評價</span>
+                            <span class="review-title" style="color:var(--neon-success)">💬 最新評價</span>
                             <span class="review-text">"${reviewText}"</span>
                         </div>`;
                 }
             } else {
                  if (isLowRating) {
-                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:#FF453A">⚠️ 評分低於 4.0，請留意。</span></div>`;
+                    reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:var(--neon-warn)">⚠️ 評分低於 4.0，請留意。</span></div>`;
                 }
             }
 
@@ -393,7 +465,7 @@
                     </div>
                 </div>
                 <div class="place-meta">
-                    <div>${isOpen ? '<span class="status-dot" style="background:#32D74B"></span>營業中' : '<span class="status-dot" style="background:#FF453A"></span>休息中'}</div>
+                    <div>${isOpen ? '<span class="status-dot" style="background:var(--neon-success)"></span>營業中' : '<span class="status-dot" style="background:var(--neon-warn)"></span>休息中'}</div>
                     <div>• ${address}</div>
                 </div>
                 ${reviewHtml}
