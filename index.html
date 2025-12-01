@@ -6,15 +6,15 @@
     <title>Travel OS Dark Pro</title>
     <style>
         :root {
-            --bg-color: #0B1120;       
-            --card-bg: #1E293B;        
-            --text-main: #F8FAFC;      
-            --text-sub: #94A3B8;       
-            --accent-green: #10B981;   
+            --bg-color: #0B1120;        
+            --card-bg: #1E293B;         
+            --text-main: #F8FAFC;       
+            --text-sub: #94A3B8;        
+            --accent-green: #10B981;    
             --accent-red: #EF4444;
-            --accent-blue: #3B82F6;    
-            --review-bg: #0F172A;      
-            --nav-btn-bg: #334155;     
+            --accent-blue: #3B82F6;     
+            --review-bg: #0F172A;       
+            --nav-btn-bg: #334155;      
         }
 
         body { 
@@ -71,8 +71,8 @@
         .toggle-btn.active .toggle-icon { background: currentColor; }
 
         .map-container { padding: 0 15px; margin-bottom: 20px; opacity: 0; height: 0; transition: all 0.5s; overflow: hidden; }
-        .map-container.show { opacity: 1; height: 30vh; }
-        #map { width: 100%; height: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); filter: grayscale(20%) invert(0%); }
+        .map-container.show { opacity: 1; height: 35vh; }
+        #map { width: 100%; height: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
 
         .results-container { padding: 0 15px 80px 15px; max-width: 600px; margin: 0 auto; }
         
@@ -81,6 +81,7 @@
             border-radius: 24px; padding: 20px; margin-bottom: 16px; 
             border: 1px solid rgba(255,255,255,0.05);
             animation: slideUp 0.4s ease forwards;
+            transition: border-color 0.3s;
         }
 
         .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
@@ -170,6 +171,7 @@
     let currentMarkers = [];
     let allFetchedPlaces = []; 
     let isOnlyOpen = false;    
+    let userMarker = null;
 
     const CATEGORIES = {
         'fun': [
@@ -205,7 +207,6 @@
         ]
     };
 
-    // 網頁載入時，直接啟動定位並顯示地圖
     window.onload = () => { 
         renderSubNav('fun'); 
         initUserLocation(); 
@@ -283,7 +284,10 @@
         } else {
             map.setCenter(center);
         }
-        new google.maps.Marker({
+        
+        if(userMarker) userMarker.setMap(null);
+        
+        userMarker = new google.maps.Marker({
             position: center, map: map,
             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#3B82F6", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
         });
@@ -321,19 +325,20 @@
             if (places && places.length > 0) {
                 
                 let filtered = places.filter(p => {
-                    const name = p.displayName || "";
+                    const name = (p.displayName || "").toLowerCase();
+                    const types = p.types || [];
                     
-                    // 1. 動物/獸醫過濾
+                    // 1. 動物/獸醫過濾：如果不包含「寵物」或「動物」，則過濾掉獸醫
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
                     if (!isSearchingForPets) {
-                        const isVetType = p.types && (p.types.includes('veterinary_care') || p.types.includes('animal_hospital'));
-                        const isVetName = name.includes('動物醫院') || name.includes('獸醫');
-                        if (isVetType || isVetName) return false;
+                        if (types.includes('veterinary_care') || types.includes('animal_hospital') || name.includes('動物醫院') || name.includes('獸醫')) {
+                            return false;
+                        }
                     }
 
                     // 2. 大型醫院專用過濾：排除診所、醫美、復健科
                     if (query.includes("醫學中心") || query.includes("區域醫院")) {
-                        if (name.includes("診所") || name.includes("醫美") || name.includes("皮膚科") || name.includes("復健科")) {
+                        if (name.includes("診所") || name.includes("醫美") || name.includes("皮膚科") || types.includes('dentist') || types.includes('physiotherapist')) {
                             return false;
                         }
                     }
@@ -358,7 +363,7 @@
                 // 過濾超過30公里
                 allFetchedPlaces = processedPlaces.filter(p => p.distanceVal <= 30);
 
-                // 排序
+                // 排序 (由近到遠)
                 allFetchedPlaces.sort((a, b) => a.distanceVal - b.distanceVal);
 
                 renderPlacesList(allFetchedPlaces);
@@ -383,19 +388,52 @@
         }
 
         if (displayList.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state">NO LOCATIONS FOUND IN RANGE</div>';
+            resultsDiv.innerHTML = '<div class="empty-state">範圍內找不到地點</div>';
             return;
         }
 
         resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">FOUND: ${displayList.length} LOCATIONS</div>`;
 
+        // 建立 Bounds 物件來自動調整地圖視野
+        const bounds = new google.maps.LatLngBounds();
+        if(userLocation) bounds.extend(userLocation);
+
         displayList.forEach((place, index) => {
             try {
                 createPlaceCard(place, index);
+                
+                const marker = new google.maps.Marker({
+                    position: place.location, map: map,
+                    label: { text: (index+1).toString(), color: "white", fontSize: "12px" }
+                });
+
+                // 點擊 Marker 捲動到對應卡片
+                marker.addListener("click", () => {
+                    const cards = document.querySelectorAll('.place-card');
+                    if(cards[index]) {
+                        cards[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        cards[index].style.borderColor = '#3B82F6';
+                        setTimeout(() => cards[index].style.borderColor = 'rgba(255,255,255,0.05)', 2000);
+                    }
+                });
+
+                currentMarkers.push(marker);
+                bounds.extend(place.location);
+
             } catch (err) {
                 console.warn("Skipping bad place:", err);
             }
         });
+
+        // 自動縮放地圖以顯示所有結果
+        if (map && displayList.length > 0) {
+            map.fitBounds(bounds);
+            // 避免縮放過近
+            const listener = google.maps.event.addListener(map, "idle", function() { 
+                if (map.getZoom() > 16) map.setZoom(16); 
+                google.maps.event.removeListener(listener); 
+            });
+        }
     }
 
     function createPlaceCard(place, index) {
@@ -403,7 +441,6 @@
         
         const name = place.displayName || "未知地點";
         const rating = place.rating ? place.rating.toFixed(1) : "N/A";
-        const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
         const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
         
         const isOpen = place.businessStatus === 'OPERATIONAL';
@@ -456,9 +493,10 @@
         card.className = 'place-card';
         card.style.animationDelay = `${index * 0.05}s`;
         
+        // 修正了 openGoogleMaps 的連結
         card.innerHTML = `
             <div class="card-top">
-                <div class="place-name">${name}</div>
+                <div class="place-name">${index+1}. ${name}</div>
                 <div class="${ratingBadgeClass}">★ ${rating} ${ratingLabel}</div>
             </div>
             
@@ -472,16 +510,13 @@
         `;
 
         resultsDiv.appendChild(card);
-
-        const marker = new google.maps.Marker({
-            position: place.location, map: map,
-            label: { text: (index+1).toString(), color: "white", fontSize: "12px" }
-        });
-        currentMarkers.push(marker);
     }
 
     function openGoogleMaps(placeId, name) {
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${placeId}`;
+        // 使用 Google Maps 官方導航 URL Scheme
+        // destination_place_id 確保導航到正確的點
+        const encodedName = encodeURIComponent(name);
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedName}&destination_place_id=${placeId}`;
         window.open(url, '_blank');
     }
 </script>
