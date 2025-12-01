@@ -6,15 +6,15 @@
     <title>Travel OS Dark</title>
     <style>
         :root {
-            /* 🎨 深色模式配色 (參考您的影片) */
-            --bg-color: #0B1120;       /* 深藍黑色背景 */
-            --card-bg: #1E293B;        /* 卡片深灰色 */
-            --text-main: #F8FAFC;      /* 主要白字 */
-            --text-sub: #94A3B8;       /* 次要灰字 */
-            --accent-green: #10B981;   /* 亮綠色 (評分/狀態) */
-            --accent-blue: #3B82F6;    /* 藍色按鈕 */
-            --review-bg: #0F172A;      /* 評論框背景 (更深) */
-            --nav-btn-bg: #334155;     /* 導航按鈕背景 */
+            /* 🎨 深色模式配色 */
+            --bg-color: #0B1120;       
+            --card-bg: #1E293B;        
+            --text-main: #F8FAFC;      
+            --text-sub: #94A3B8;       
+            --accent-green: #10B981;   
+            --accent-blue: #3B82F6;    
+            --review-bg: #0F172A;      
+            --nav-btn-bg: #334155;     
         }
 
         body { 
@@ -44,7 +44,7 @@
             flex: 1; border: 1px solid rgba(255,255,255,0.1); 
             background: rgba(255,255,255,0.05); color: var(--text-sub); 
             padding: 12px 0; border-radius: 24px; font-size: 14px; font-weight: 600; 
-            cursor: pointer; transition: all 0.3s;
+            cursor: pointer; transition: all 0.3s; white-space: nowrap; padding-left: 15px; padding-right: 15px;
         }
         .tab-btn.active { background: var(--text-main); color: var(--bg-color); }
 
@@ -69,7 +69,7 @@
         /* 結果列表 */
         .results-container { padding: 0 15px 80px 15px; max-width: 600px; margin: 0 auto; }
         
-        /* ✨ 卡片設計 (模仿影片) */
+        /* 卡片設計 */
         .place-card { 
             background: var(--card-bg); 
             border-radius: 24px; 
@@ -87,7 +87,7 @@
             color: var(--accent-green); 
             padding: 4px 10px; border-radius: 8px; 
             font-size: 13px; font-weight: 800; 
-            display: flex; align-items: center; gap: 4px;
+            display: flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
 
         .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
@@ -165,7 +165,7 @@
     let userLocation = null;
     let currentMarkers = [];
 
-    // 設定檔
+    // 🌟 設定檔：已根據需求修改
     const CATEGORIES = {
         'fun': [
             { name: "附近公園", query: "公園", icon: "🛝" },
@@ -174,19 +174,22 @@
             { name: "室內遊樂", query: "室內遊樂園", icon: "🧩" }
         ],
         'food': [
+            // 修正：親子與寵物合併，搜尋關鍵字包含兩種
+            { name: "親子寵物", query: "親子餐廳 寵物友善餐廳", icon: "🐶" }, 
             { name: "手搖飲料", query: "飲料店", icon: "🥤" },
-            { name: "親子餐廳", query: "親子餐廳", icon: "👶" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "☕" },
-            { name: "在地小吃", query: "小吃", icon: "🍜" },
+            { name: "在地小吃", query: "小吃 麵店", icon: "🍜" },
             { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" },
             { name: "早午餐", query: "早午餐", icon: "🍳" }
         ],
         'medical': [
-            { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
-            { name: "藥局", query: "藥局", icon: "💊" },
-            { name: "耳鼻喉科", query: "耳鼻喉科", icon: "👂" },
-            { name: "小兒科", query: "小兒科", icon: "👶" },
-            { name: "寵物醫院", query: "動物醫院", icon: "🐶" }
+            // 修正：排序與關鍵字，急診只找大醫院
+            { name: "急診醫院", query: "醫學中心 綜合醫院 急診", icon: "🏥" },
+            { name: "小兒科", query: "小兒科診所", icon: "👶" },
+            { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
+            // 新增：一般診所 (家醫科/內科)
+            { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" }, 
+            { name: "藥局", query: "藥局", icon: "💊" }
         ],
         'life': [
             { name: "便利超商", query: "便利商店", icon: "🏪" },
@@ -230,8 +233,6 @@
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    
-                    // 顯示地圖
                     document.getElementById('map-wrapper').classList.add('show');
                     await initMap(userLocation.lat, userLocation.lng);
                     await performSearch(userLocation, query);
@@ -252,8 +253,6 @@
         } else {
             map.setCenter(center);
         }
-        
-        // 使用者位置 (藍點)
         new google.maps.Marker({
             position: center, map: map,
             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#3B82F6", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
@@ -272,19 +271,32 @@
         try {
             const request = {
                 textQuery: query,
-                // 🌟 關鍵修改：除了要地點，還要 'reviews' 和 'businessStatus'
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews'],
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types'],
                 locationBias: { center: location, radius: 1000 },
-                maxResultCount: 10,
+                maxResultCount: 20, // 增加數量以免過濾後太少
                 language: 'zh-TW',
             };
 
             const { places } = await Place.searchByText(request);
 
             if (places && places.length > 0) {
-                resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">SCAN COMPLETE: ${places.length} LOCATIONS FOUND</div>`;
+                // 🛑 關鍵過濾邏輯：移除「動物/獸醫」相關結果
+                // 除非搜尋關鍵字本身就包含 "動物" 或 "寵物"
+                const filteredPlaces = places.filter(p => {
+                    const isSearchingForPets = query.includes('寵物') || query.includes('動物');
+                    
+                    // 如果不是在找寵物，但類別或名稱包含獸醫，就過濾掉
+                    if (!isSearchingForPets) {
+                        const isVetType = p.types && (p.types.includes('veterinary_care') || p.types.includes('animal_hospital'));
+                        const isVetName = p.displayName && (p.displayName.includes('動物醫院') || p.displayName.includes('獸醫'));
+                        if (isVetType || isVetName) return false;
+                    }
+                    return true;
+                });
+
+                resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">SCAN COMPLETE: ${filteredPlaces.length} LOCATIONS FOUND</div>`;
                 
-                places.forEach((place, index) => {
+                filteredPlaces.forEach((place, index) => {
                     createPlaceCard(place, index);
                 });
             } else {
@@ -299,69 +311,43 @@
     function createPlaceCard(place, index) {
         const resultsDiv = document.getElementById('results');
         
-        // 1. 資料處理
         const name = place.displayName || "未知地點";
         const rating = place.rating ? place.rating.toFixed(1) : "N/A";
         const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
         const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
         
-        // 2. 判斷營業狀態
         const isOpen = place.businessStatus === 'OPERATIONAL';
         const statusHtml = isOpen 
             ? `<span class="dot-open"></span> 營業中` 
             : `<span class="dot-close"></span> 休息中`;
 
-        // 3. 抓取最新評論 (如果有)
         let reviewHtml = '';
         if (place.reviews && place.reviews.length > 0) {
-            // 抓第一則評論
             const review = place.reviews[0]; 
-            // 截斷太長的文字
             const text = review.text.length > 65 ? review.text.substring(0, 65) + "..." : review.text;
-            
-            reviewHtml = `
-                <div class="review-box">
-                    <div class="review-label">💬 最新評價</div>
-                    <div class="review-text">"${text}"</div>
-                </div>
-            `;
+            reviewHtml = `<div class="review-box"><div class="review-label">💬 最新評價</div><div class="review-text">"${text}"</div></div>`;
         } else {
-            // 如果沒有評論，顯示預設文字
-            reviewHtml = `
-                <div class="review-box" style="opacity:0.5">
-                    <div class="review-label">💬 暫無評價</div>
-                </div>
-            `;
+            reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 暫無評價</div></div>`;
         }
 
-        // 4. 建立卡片 HTML
         const card = document.createElement('div');
         card.className = 'place-card';
-        card.style.animationDelay = `${index * 0.1}s`; // 瀑布流動畫
+        card.style.animationDelay = `${index * 0.1}s`;
         
         card.innerHTML = `
             <div class="card-top">
                 <div class="place-name">${name}</div>
                 <div class="rating-badge">★ ${rating} <span style="font-weight:400; font-size:11px; margin-left:2px;">${count}</span></div>
             </div>
-            
-            <div class="status-row">
-                ${statusHtml} • ${address}
-            </div>
-
+            <div class="status-row">${statusHtml} • ${address}</div>
             ${reviewHtml}
-
-            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name}')">
-                NAVIGATE ➔
-            </button>
+            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name}')">NAVIGATE ➔</button>
         `;
 
         resultsDiv.appendChild(card);
 
-        // 5. 地圖標記
         const marker = new google.maps.Marker({
-            position: place.location, 
-            map: map,
+            position: place.location, map: map,
             label: { text: (index+1).toString(), color: "white", fontSize: "12px" }
         });
         currentMarkers.push(marker);
