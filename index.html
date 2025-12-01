@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS Dark</title>
+    <title>Travel OS Dark Pro</title>
     <style>
         :root {
-            /* 🎨 深色模式配色 */
             --bg-color: #0B1120;       
             --card-bg: #1E293B;        
             --text-main: #F8FAFC;      
             --text-sub: #94A3B8;       
             --accent-green: #10B981;   
+            --accent-red: #EF4444;     /* 新增：紅色警示 */
             --accent-blue: #3B82F6;    
             --review-bg: #0F172A;      
             --nav-btn-bg: #334155;     
@@ -25,7 +25,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
         
-        /* 標題區 */
         header { 
             background: rgba(11, 17, 32, 0.95); 
             backdrop-filter: blur(10px); 
@@ -38,7 +37,7 @@
         .brand span { font-size: 10px; display: block; color: var(--text-sub); font-weight: 400; margin-top: 2px; }
         .status-dot { width: 8px; height: 8px; background-color: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); }
 
-        /* 第一層：大分類 Tab */
+        /* 分類 Tab */
         .main-tabs { display: flex; padding: 15px 15px 5px; gap: 10px; overflow-x: auto; scrollbar-width: none; }
         .tab-btn { 
             flex: 1; border: 1px solid rgba(255,255,255,0.1); 
@@ -48,9 +47,9 @@
         }
         .tab-btn.active { background: var(--text-main); color: var(--bg-color); }
 
-        /* 第二層：細項膠囊 */
-        .sub-nav-container { padding: 10px 15px 20px 15px; }
-        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        /* 第二層：細項與過濾器 */
+        .sub-nav-container { padding: 10px 15px; }
+        .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; margin-bottom: 10px; }
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
 
         .chip-btn { 
@@ -61,20 +60,30 @@
         }
         .chip-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
 
+        /* ✨ 新增：過濾開關區域 */
+        .filter-bar { display: flex; justify-content: flex-end; padding: 0 5px; margin-bottom: 10px; }
+        .toggle-btn {
+            background: #1E293B; border: 1px solid #334155; color: var(--text-sub);
+            padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        .toggle-btn.active {
+            background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green);
+        }
+        .toggle-icon { width: 10px; height: 10px; border-radius: 50%; border: 1px solid currentColor; }
+        .toggle-btn.active .toggle-icon { background: currentColor; }
+
         /* 地圖區 */
         .map-container { padding: 0 15px; margin-bottom: 20px; opacity: 0; height: 0; transition: all 0.5s; overflow: hidden; }
         .map-container.show { opacity: 1; height: 30vh; }
         #map { width: 100%; height: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); filter: grayscale(20%) invert(0%); }
 
-        /* 結果列表 */
         .results-container { padding: 0 15px 80px 15px; max-width: 600px; margin: 0 auto; }
         
         /* 卡片設計 */
         .place-card { 
             background: var(--card-bg); 
-            border-radius: 24px; 
-            padding: 20px; 
-            margin-bottom: 16px; 
+            border-radius: 24px; padding: 20px; margin-bottom: 16px; 
             border: 1px solid rgba(255,255,255,0.05);
             animation: slideUp 0.4s ease forwards;
         }
@@ -83,47 +92,40 @@
         .place-name { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.3; flex: 1; margin-right: 10px; }
         
         .rating-badge { 
-            background: rgba(16, 185, 129, 0.2); 
-            color: var(--accent-green); 
-            padding: 4px 10px; border-radius: 8px; 
-            font-size: 13px; font-weight: 800; 
+            background: rgba(16, 185, 129, 0.2); color: var(--accent-green); 
+            padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; 
             display: flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
+        /* 低分樣式 */
+        .rating-badge.low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
 
-        .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .hours-text { font-size: 12px; color: #64748B; margin-bottom: 15px; display: block; }
+        
         .dot-open { width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; }
-        .dot-close { width: 6px; height: 6px; background: #EF4444; border-radius: 50%; }
+        .dot-close { width: 6px; height: 6px; background: #64748B; border-radius: 50%; }
 
         /* 評論區塊 */
         .review-box {
-            background: var(--review-bg);
-            border-radius: 16px;
-            padding: 12px 16px;
-            position: relative;
-            margin-bottom: 16px;
-            border-left: 3px solid var(--accent-green);
+            background: var(--review-bg); border-radius: 16px; padding: 12px 16px;
+            position: relative; margin-bottom: 16px; border-left: 3px solid var(--accent-green);
         }
-        .review-label { font-size: 11px; color: var(--accent-green); font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .review-box.low { border-left-color: var(--accent-red); } /* 低分紅線 */
+        
+        .review-label { font-size: 11px; color: var(--accent-green); font-weight: 700; margin-bottom: 4px; }
+        .review-box.low .review-label { color: var(--accent-red); }
+        
         .review-text { font-size: 13px; color: #CBD5E1; line-height: 1.5; font-style: italic; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
-        /* 導航按鈕 */
         .nav-btn {
-            width: 100%;
-            background: var(--nav-btn-bg);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 6px;
+            width: 100%; background: var(--nav-btn-bg); color: white; border: none;
+            padding: 12px; border-radius: 14px; font-size: 14px; font-weight: 700;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px;
             transition: background 0.2s;
         }
         .nav-btn:active { background: #475569; transform: scale(0.98); }
 
         .empty-state { text-align: center; margin-top: 60px; color: var(--text-sub); font-size: 14px; }
-        
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
@@ -146,6 +148,12 @@
 
 <div class="sub-nav-container">
     <div class="sub-scroll-wrapper" id="sub-nav"></div>
+    
+    <div class="filter-bar">
+        <button class="toggle-btn" id="openFilterBtn" onclick="toggleOpenFilter()">
+            <span class="toggle-icon"></span> 只顯示營業中
+        </button>
+    </div>
 </div>
 
 <div class="map-container" id="map-wrapper">
@@ -164,8 +172,9 @@
     let map;
     let userLocation = null;
     let currentMarkers = [];
+    let allFetchedPlaces = []; // 暫存所有抓到的地點，方便快速過濾
+    let isOnlyOpen = false;    // 過濾狀態
 
-    // 🌟 設定檔：已根據需求修改
     const CATEGORIES = {
         'fun': [
             { name: "附近公園", query: "公園", icon: "🛝" },
@@ -174,7 +183,6 @@
             { name: "室內遊樂", query: "室內遊樂園", icon: "🧩" }
         ],
         'food': [
-            // 修正：親子與寵物合併，搜尋關鍵字包含兩種
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳", icon: "🐶" }, 
             { name: "手搖飲料", query: "飲料店", icon: "🥤" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "☕" },
@@ -183,11 +191,9 @@
             { name: "早午餐", query: "早午餐", icon: "🍳" }
         ],
         'medical': [
-            // 修正：排序與關鍵字，急診只找大醫院
             { name: "急診醫院", query: "醫學中心 綜合醫院 急診", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
-            // 新增：一般診所 (家醫科/內科)
             { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" }, 
             { name: "藥局", query: "藥局", icon: "💊" }
         ],
@@ -200,6 +206,17 @@
     };
 
     window.onload = () => { renderSubNav('fun'); };
+
+    // 切換過濾模式 (一鍵顯示營業中)
+    function toggleOpenFilter() {
+        isOnlyOpen = !isOnlyOpen;
+        const btn = document.getElementById('openFilterBtn');
+        if(isOnlyOpen) btn.classList.add('active');
+        else btn.classList.remove('active');
+        
+        // 重新渲染，不需要重新 Call API
+        renderPlacesList(allFetchedPlaces);
+    }
 
     function selectCategory(cat) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -219,7 +236,6 @@
         });
     }
 
-    // 核心搜尋功能
     function startSearch(query, btnElement) {
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
@@ -228,6 +244,7 @@
         resultsDiv.innerHTML = '<div class="empty-state"><p>SCANNING AREA...</p></div>';
         
         clearMarkers();
+        allFetchedPlaces = []; // 清空暫存
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -271,21 +288,19 @@
         try {
             const request = {
                 textQuery: query,
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types'],
+                // 🌟 新增 regularOpeningHours 以取得詳細營業時間
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours'],
                 locationBias: { center: location, radius: 1000 },
-                maxResultCount: 20, // 增加數量以免過濾後太少
+                maxResultCount: 20,
                 language: 'zh-TW',
             };
 
             const { places } = await Place.searchByText(request);
 
             if (places && places.length > 0) {
-                // 🛑 關鍵過濾邏輯：移除「動物/獸醫」相關結果
-                // 除非搜尋關鍵字本身就包含 "動物" 或 "寵物"
-                const filteredPlaces = places.filter(p => {
+                // 過濾動物醫院
+                allFetchedPlaces = places.filter(p => {
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
-                    
-                    // 如果不是在找寵物，但類別或名稱包含獸醫，就過濾掉
                     if (!isSearchingForPets) {
                         const isVetType = p.types && (p.types.includes('veterinary_care') || p.types.includes('animal_hospital'));
                         const isVetName = p.displayName && (p.displayName.includes('動物醫院') || p.displayName.includes('獸醫'));
@@ -293,12 +308,10 @@
                     }
                     return true;
                 });
-
-                resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">SCAN COMPLETE: ${filteredPlaces.length} LOCATIONS FOUND</div>`;
                 
-                filteredPlaces.forEach((place, index) => {
-                    createPlaceCard(place, index);
-                });
+                // 執行渲染
+                renderPlacesList(allFetchedPlaces);
+
             } else {
                 resultsDiv.innerHTML = '<div class="empty-state">NO LOCATIONS FOUND</div>';
             }
@@ -306,6 +319,30 @@
             console.error(e);
             resultsDiv.innerHTML = '<div class="empty-state">API ERROR (CHECK CONSOLE)</div>';
         }
+    }
+
+    // 負責渲染畫面的函式 (含過濾邏輯)
+    function renderPlacesList(places) {
+        const resultsDiv = document.getElementById('results');
+        clearMarkers();
+        resultsDiv.innerHTML = "";
+
+        // 判斷是否只顯示營業中
+        let displayList = places;
+        if (isOnlyOpen) {
+            displayList = places.filter(p => p.businessStatus === 'OPERATIONAL');
+        }
+
+        if (displayList.length === 0) {
+            resultsDiv.innerHTML = '<div class="empty-state">NO OPEN LOCATIONS FOUND</div>';
+            return;
+        }
+
+        resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">FOUND: ${displayList.length} LOCATIONS</div>`;
+
+        displayList.forEach((place, index) => {
+            createPlaceCard(place, index);
+        });
     }
 
     function createPlaceCard(place, index) {
@@ -316,31 +353,70 @@
         const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
         const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
         
+        // 1. 營業狀態
         const isOpen = place.businessStatus === 'OPERATIONAL';
         const statusHtml = isOpen 
             ? `<span class="dot-open"></span> 營業中` 
             : `<span class="dot-close"></span> 休息中`;
 
+        // 2. 獲取當日營業時間字串
+        let hoursText = "";
+        if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
+            const todayIndex = (new Date().getDay() + 6) % 7; // 調整 Google 的星期順序
+            hoursText = place.regularOpeningHours.weekdayDescriptions[todayIndex] || "";
+        }
+
+        // 3. 評分與評論邏輯
+        const isLowRating = place.rating && place.rating < 4.0;
+        
+        // 評分標籤樣式
+        let ratingBadgeClass = 'rating-badge';
+        let ratingLabel = '';
+        if (isLowRating) {
+            ratingBadgeClass += ' low';
+            ratingLabel = '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>';
+        }
+
+        // 評論挑選邏輯
         let reviewHtml = '';
         if (place.reviews && place.reviews.length > 0) {
-            const review = place.reviews[0]; 
-            const text = review.text.length > 65 ? review.text.substring(0, 65) + "..." : review.text;
-            reviewHtml = `<div class="review-box"><div class="review-label">💬 最新評價</div><div class="review-text">"${text}"</div></div>`;
+            let targetReview = place.reviews[0];
+
+            // 如果低分，嘗試找一個負評來顯示 (rating <= 3)
+            if (isLowRating) {
+                const badReview = place.reviews.find(r => r.rating <= 3);
+                if (badReview) targetReview = badReview;
+            }
+
+            const text = targetReview.text.length > 65 ? targetReview.text.substring(0, 65) + "..." : targetReview.text;
+            const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
+            const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
+
+            reviewHtml = `
+                <div class="${reviewBoxClass}">
+                    <div class="review-label">${reviewTitle}</div>
+                    <div class="review-text">"${text}"</div>
+                </div>
+            `;
         } else {
             reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 暫無評價</div></div>`;
         }
 
         const card = document.createElement('div');
         card.className = 'place-card';
-        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animationDelay = `${index * 0.05}s`;
         
         card.innerHTML = `
             <div class="card-top">
                 <div class="place-name">${name}</div>
-                <div class="rating-badge">★ ${rating} <span style="font-weight:400; font-size:11px; margin-left:2px;">${count}</span></div>
+                <div class="${ratingBadgeClass}">★ ${rating} ${ratingLabel}</div>
             </div>
+            
             <div class="status-row">${statusHtml} • ${address}</div>
+            ${hoursText ? `<span class="hours-text">${hoursText}</span>` : ''}
+
             ${reviewHtml}
+
             <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name}')">NAVIGATE ➔</button>
         `;
 
