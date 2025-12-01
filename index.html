@@ -126,37 +126,39 @@
 </head>
 <body>
 
-<header>
-    <div class="brand">
-        Travel OS
-        <span>PROXIMITY & REVIEW SYSTEM</span>
+<div id="app-content">
+    <header>
+        <div class="brand">
+            Travel OS
+            <span>PROXIMITY & REVIEW SYSTEM</span>
+        </div>
+        <div class="status-dot"></div>
+    </header>
+
+    <div class="main-tabs">
+        <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
+        <button class="tab-btn" onclick="selectCategory('food')">美食</button>
+        <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
+        <button class="tab-btn" onclick="selectCategory('life')">便利</button>
     </div>
-    <div class="status-dot"></div>
-</header>
 
-<div class="main-tabs">
-    <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
-    <button class="tab-btn" onclick="selectCategory('food')">美食</button>
-    <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
-    <button class="tab-btn" onclick="selectCategory('life')">便利</button>
-</div>
-
-<div class="sub-nav-container">
-    <div class="sub-scroll-wrapper" id="sub-nav"></div>
-    <div class="filter-bar">
-        <button class="toggle-btn" id="openFilterBtn" onclick="toggleOpenFilter()">
-            <span class="toggle-icon"></span> 只顯示營業中
-        </button>
+    <div class="sub-nav-container">
+        <div class="sub-scroll-wrapper" id="sub-nav"></div>
+        <div class="filter-bar">
+            <button class="toggle-btn" id="openFilterBtn" onclick="toggleOpenFilter()">
+                <span class="toggle-icon"></span> 只顯示營業中
+            </button>
+        </div>
     </div>
-</div>
 
-<div class="map-container" id="map-wrapper">
-    <div id="map"></div>
-</div>
+    <div class="map-container" id="map-wrapper">
+        <div id="map"></div>
+    </div>
 
-<div class="results-container" id="results">
-    <div class="empty-state">
-        <p>SYSTEM READY<br>Searching for your location...</p>
+    <div class="results-container" id="results">
+        <div class="empty-state">
+            <p>SYSTEM READY<br>Searching for your location...</p>
+        </div>
     </div>
 </div>
 
@@ -180,7 +182,6 @@
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳", icon: "🐶" }, 
             { name: "手搖飲料", query: "飲料店", icon: "🥤" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "☕" },
-            // ✨ 新增項目
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館", icon: "🍺" },
             { name: "義式料理", query: "義大利麵 義式餐廳", icon: "🍝" },
             { name: "法式料理", query: "法式餐廳", icon: "🍷" },
@@ -190,7 +191,6 @@
             { name: "早午餐", query: "早午餐", icon: "🍳" }
         ],
         'medical': [
-            // 🌟 修正：名稱改為「大型醫院」，並且查詢關鍵字改為「醫學中心」，程式碼下方還有過濾邏輯
             { name: "大型醫院", query: "醫學中心 區域醫院 教學醫院", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
@@ -205,6 +205,7 @@
         ]
     };
 
+    // 網頁載入時，直接啟動定位並顯示地圖
     window.onload = () => { 
         renderSubNav('fun'); 
         initUserLocation(); 
@@ -330,8 +331,7 @@
                         if (isVetType || isVetName) return false;
                     }
 
-                    // 2. 🌟 關鍵過濾：如果使用者搜尋的是「醫學中心/大醫院」，嚴格排除「診所/醫美/復健」
-                    // 這裡的邏輯是：如果搜尋字串裡包含 "醫學中心" (代表按下大型醫院按鈕)，就開啟黑名單過濾
+                    // 2. 大型醫院專用過濾：排除診所、醫美、復健科
                     if (query.includes("醫學中心") || query.includes("區域醫院")) {
                         if (name.includes("診所") || name.includes("醫美") || name.includes("皮膚科") || name.includes("復健科")) {
                             return false;
@@ -430,7 +430,6 @@
         let ratingBadgeClass = isLowRating ? 'rating-badge low' : 'rating-badge';
         let ratingLabel = isLowRating ? '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>' : '';
 
-        // 大型醫院標籤 (如果名字包含醫院或屬性是hospital，且不是診所)
         let extraTag = "";
         if (place.types && place.types.includes('hospital') && !name.includes('診所')) {
              extraTag = `<span style="font-size:12px; color:#A78BFA; background:rgba(139,92,246,0.15); padding:2px 6px; border-radius:4px; margin-right:6px;">🏥 醫療機構</span>`;
