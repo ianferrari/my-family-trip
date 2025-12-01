@@ -190,11 +190,11 @@
     let map;
     let userLocation = null;
     let currentMarkers = [];
-    let allFetchedPlaces = []; 
-    let isOnlyOpen = false;    
+    let allFetchedPlaces = [];  
+    let isOnlyOpen = false;     
     let userMarker = null;
-    let currentQuery = ""; 
-    let currentRadius = 3000; 
+    let currentQuery = "";  
+    let currentRadius = 3000;   
 
     const CATEGORIES = {
         'fun': [
@@ -204,10 +204,10 @@
             { name: "室內遊樂", query: "室內遊樂園 Indoor Playground Arcade", icon: "🧩" }
         ],
         'food': [
-            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
-            { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
+            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" },  
+            { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" },  
             
-            // 🫖 [新增] 品茶聊天
+            // 🫖 品茶聊天
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
             
             { name: "手搖飲料", query: "飲料店 手搖杯 Bubble Tea Drinks Juice Bar", icon: "🥤" },
@@ -221,15 +221,16 @@
         ],
         'medical': [
             { name: "大型醫院", query: "醫學中心 區域醫院 Hospital General Hospital", icon: "🏥" },
-			{ name: "小兒科", query: "小兒科診所 Pediatrician", icon: "👶" },
+            { name: "小兒科", query: "小兒科診所 Pediatrician", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所 ENT Clinic", icon: "👂" },
-            { name: "一般診所", query: "診所 內科 Clinic Doctor Medical Center", icon: "🩺" }
-            { name: "藥局", query: "藥局 Pharmacy Drugstore Chemist", icon: "💊" }, 
+            { name: "一般診所", query: "診所 內科 Clinic Doctor Medical Center", icon: "🩺" },
+            // 修正：補上缺失的逗號
+            { name: "藥局", query: "藥局 Pharmacy Drugstore Chemist", icon: "💊" }
         ],
         'life': [
             { name: "便利超商", query: "便利商店 Convenience Store Supermarket", icon: "🏪" },
             
-            // 🛒 [新增] 超市量販 - 支援 全聯/家樂福/好市多/Walmart
+            // 🛒 超市量販
             { name: "超市量販", query: "超市 量販店 全聯 家樂福 好市多 Supermarket Hypermarket Grocery Store Costco Carrefour", icon: "🛒" },
             
             { name: "廁所", query: "公廁 Public Toilet Restroom WC", icon: "🚾" }, 
@@ -243,6 +244,7 @@
         initUserLocation(); 
     };
 
+    // ⭐️ 優化：已加入 8 秒超時設定，避免程式凍結
     function initUserLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -253,8 +255,10 @@
                     await initMap(userLocation.lat, userLocation.lng);
                 },
                 (error) => {
-                    document.getElementById('results').innerHTML = '<div class="empty-state">LOCATION ACCESS DENIED</div>';
-                }
+                    // 如果失敗或超時，顯示錯誤訊息並解除介面凍結
+                    document.getElementById('results').innerHTML = '<div class="empty-state">LOCATION ACCESS DENIED OR TIMEOUT</div>';
+                },
+                { timeout: 8000, maximumAge: 60000 } // 8 秒超時
             );
         } else {
             document.getElementById('results').innerHTML = '<div class="empty-state">Geolocation Not Supported</div>';
