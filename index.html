@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS V2.7</title>
+    <title>Travel OS V2.8</title>
     <style>
         :root {
             --bg-color: #0B1120;        
@@ -144,7 +144,7 @@
     <header>
         <div class="brand">
             Travel OS
-            <span>GLOBAL EDITION V2.7</span>
+            <span>GLOBAL EDITION V2.8</span>
         </div>
         <div class="status-dot"></div>
     </header>
@@ -204,26 +204,21 @@
             { name: "室內遊樂", query: "室內遊樂園 Indoor Playground Arcade", icon: "🧩" }
         ],
         'food': [
-            // 🐶 親子寵物 (最左邊)
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
-            
-            // 🍜 [新增] 在地美食 - 全球通用版 (找當地特色小吃)
-            { name: "在地美食", query: "在地美食 小吃 街頭小吃 特色小吃 Local Food Street Food Snack", icon: "🍜" },
-
-            // 🇹🇼 [新增] 台灣小吃 - 台灣專用版 (找滷肉飯、牛肉麵)
-            { name: "台灣小吃", query: "魯肉飯 炒麵 牛肉麵 肉圓 水煎包 鹹酥雞 臭豆腐 蚵仔煎 Taiwan Street Food", icon: "🇹🇼" },
-
             { name: "日式料理", query: "日式料理 壽司 迴轉壽司 拉麵 烏龍麵 居酒屋 定食 Japanese Restaurant Sushi Ramen Udon Izakaya", icon: "🍣" }, 
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
-            { name: "手搖飲料", query: "手搖飲料 飲料店 珍珠奶茶 鮮果茶 奶蓋茶 Bubble Tea Tea Shop", icon: "🥤" },
+            
+            // 🥤 [強力修正] 手搖飲 - 暴力列出新世代品牌，提高權重
+            { name: "手搖飲料", query: "八曜和茶 鶴茶樓 麻古茶坊 大茗 龜記 一沐日 五桐號 得正 50嵐 清心 手搖飲料 珍珠奶茶 Bubble Tea Tea Shop", icon: "🥤" },
+            
             { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
             { name: "義式料理", query: "義大利麵 義式餐廳 披薩 Italian Restaurant Pizza Pasta", icon: "🍝" },
             { name: "法式料理", query: "法式餐廳 French Restaurant Bistro", icon: "🍷" },
+            { name: "在地美食", query: "在地美食 小吃 街頭小吃 特色小吃 Local Food Street Food Snack", icon: "🍜" },
+            { name: "台灣小吃", query: "魯肉飯 炒麵 牛肉麵 肉圓 水煎包 鹹酥雞 臭豆腐 蚵仔煎 Taiwan Street Food", icon: "🇹🇼" },
             { name: "火鍋燒肉", query: "火鍋 燒肉 麻辣鍋 Hotpot BBQ Yakiniku", icon: "🔥" },
             { name: "早午餐", query: "早午餐 輕食 三明治 Brunch Breakfast Sandwich", icon: "🍳" },
-
-            // 🥬 傳統市場 (最右邊)
             { name: "傳統市場", query: "傳統市場 觀光市場 黃昏市場 早市 菜市場 建國市場 第二市場 第三市場 第五市場 向上市場 東興市場 Market Morning Market Fish Market Farmers Market", icon: "🥬" }
         ],
         'medical': [
@@ -368,7 +363,8 @@
         try {
             const request = {
                 textQuery: query,
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours'],
+                // ✨ 新增 priceLevel 欄位
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours', 'priceLevel'],
                 locationBias: { center: location, radius: radius }, 
                 maxResultCount: 20,
             };
@@ -493,6 +489,16 @@
             ? `<span class="dot-open"></span> Open` 
             : `<span class="dot-close"></span> Closed`;
 
+        // ✨ 價位顯示邏輯
+        let priceHtml = "";
+        if (place.priceLevel) {
+            const price = "💰".repeat(place.priceLevel.length || 1); // 簡單處理，如果回傳字串
+            // 修正：Google API v3 通常回傳 0-4 的數字，我們轉成 $ 符號
+            const level = typeof place.priceLevel === 'number' ? place.priceLevel : 1;
+            const dollars = "💰".repeat(level);
+            priceHtml = `<span style="font-size:12px; margin-right:6px;">${dollars}</span>`;
+        }
+
         let hoursText = "";
         if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
             const todayIndex = (new Date().getDay() + 6) % 7; 
@@ -545,20 +551,32 @@
             </div>
             
             <div class="status-row">
-                ${distDisplay} ${extraTag} ${statusHtml} • ${address}
+                ${distDisplay} ${priceHtml} ${extraTag} ${statusHtml} • ${address}
             </div>
             ${hoursText ? `<span class="hours-text">${hoursText}</span>` : ''}
             ${reviewHtml}
 
-            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name.replace(/'/g, "\\'")}')">NAVIGATE ➔</button>
+            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name.replace(/'/g, "\\'")}', ${place.distanceVal})">NAVIGATE ➔</button>
         `;
 
         resultsDiv.appendChild(card);
     }
 
-    function openGoogleMaps(placeId, name) {
+    // ✨ 智慧導航功能
+    function openGoogleMaps(placeId, name, distKm) {
         const encodedName = encodeURIComponent(name);
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedName}&destination_place_id=${placeId}`;
+        
+        // 預設模式：開車
+        let mode = 'driving';
+        // 如果距離小於 1 公里，自動切換為步行
+        if (distKm && distKm < 1.0) {
+            mode = 'walking';
+        }
+
+        // 使用 Google Maps Universal Link，並帶入 travelmode
+        // 注意：iOS/Android App有時會忽略 mode 參數，但在網頁版有效
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedName}&destination_place_id=${placeId}&travelmode=${mode}`;
+        
         window.open(url, '_blank');
     }
 </script>
