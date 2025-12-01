@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS Dark Pro</title>
+    <title>Travel OS V2.0</title>
     <style>
         :root {
             --bg-color: #0B1120;        
@@ -58,17 +58,32 @@
         }
         .chip-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
 
-        .filter-bar { display: flex; justify-content: flex-end; padding: 0 5px; margin-bottom: 10px; }
+        /* Updated Filter Bar Layout */
+        .filter-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 5px; margin-bottom: 10px; gap: 10px; }
+        
         .toggle-btn {
             background: #1E293B; border: 1px solid #334155; color: var(--text-sub);
             padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
             display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;
+            white-space: nowrap;
         }
         .toggle-btn.active {
             background: rgba(16, 185, 129, 0.2); border-color: var(--accent-green); color: var(--accent-green);
         }
         .toggle-icon { width: 10px; height: 10px; border-radius: 50%; border: 1px solid currentColor; }
         .toggle-btn.active .toggle-icon { background: currentColor; }
+
+        /* New Radius Selector Style */
+        .radius-select {
+            background: #1E293B; border: 1px solid #334155; color: var(--text-main);
+            padding: 6px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+            outline: none; -webkit-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 8px auto;
+            padding-right: 25px;
+        }
 
         .map-container { padding: 0 15px; margin-bottom: 20px; opacity: 0; height: 0; transition: all 0.5s; overflow: hidden; }
         .map-container.show { opacity: 1; height: 35vh; }
@@ -131,7 +146,7 @@
     <header>
         <div class="brand">
             Travel OS
-            <span>PROXIMITY & REVIEW SYSTEM</span>
+            <span>GLOBAL EDITION V2</span>
         </div>
         <div class="status-dot"></div>
     </header>
@@ -145,9 +160,17 @@
 
     <div class="sub-nav-container">
         <div class="sub-scroll-wrapper" id="sub-nav"></div>
+        
         <div class="filter-bar">
+            <select id="radiusSelect" class="radius-select" onchange="refreshSearch()">
+                <option value="1000">1 km (Walk)</option>
+                <option value="3000" selected>3 km (Bike)</option>
+                <option value="5000">5 km (Drive)</option>
+                <option value="10000">10 km (Far)</option>
+            </select>
+
             <button class="toggle-btn" id="openFilterBtn" onclick="toggleOpenFilter()">
-                <span class="toggle-icon"></span> 只顯示營業中
+                <span class="toggle-icon"></span> Open Now
             </button>
         </div>
     </div>
@@ -172,38 +195,40 @@
     let allFetchedPlaces = []; 
     let isOnlyOpen = false;    
     let userMarker = null;
+    let currentQuery = ""; // Store current query for refreshing
+    let currentRadius = 3000; // Default 3km
 
     const CATEGORIES = {
         'fun': [
-            { name: "附近公園", query: "公園", icon: "🛝" },
-            { name: "觀光景點", query: "觀光景點", icon: "📸" },
-            { name: "百貨購物", query: "百貨公司", icon: "🛍️" },
-            { name: "室內遊樂", query: "室內遊樂園", icon: "🧩" }
+            { name: "附近公園", query: "公園 Park", icon: "🛝" },
+            { name: "觀光景點", query: "觀光景點 Tourist Attraction Sightseeing", icon: "📸" },
+            { name: "百貨購物", query: "百貨公司 Shopping Mall Department Store", icon: "🛍️" },
+            { name: "室內遊樂", query: "室內遊樂園 Indoor Playground Arcade", icon: "🧩" }
         ],
         'food': [
-            { name: "親子寵物", query: "親子餐廳 寵物友善餐廳", icon: "🐶" }, 
-            { name: "手搖飲料", query: "飲料店", icon: "🥤" },
-            { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "☕" },
-            { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar", icon: "🍺" },
-            { name: "義式料理", query: "義大利麵 義式餐廳", icon: "🍝" },
-            { name: "法式料理", query: "法式餐廳", icon: "🍷" },
-            { name: "日式料理", query: "日式料理 壽司 藏壽司 壽司郎 平祿壽司 烏龍麵", icon: "🍣" },
-            { name: "在地小吃", query: "小吃 麵店 滷肉飯 炒麵 牛肉麵 水餃 炒飯 小籠包 爌肉飯 肉圓 街邊小吃", icon: "🍜" },
-            { name: "火鍋燒肉", query: "火鍋 燒肉 麻辣鍋", icon: "🔥" },
-            { name: "早午餐", query: "早午餐 早餐 輕食", icon: "🍳" }
+            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
+            { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
+            { name: "手搖飲料", query: "飲料店 手搖杯 Bubble Tea Drinks Juice Bar", icon: "🥤" },
+            { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
+            { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
+            { name: "義式料理", query: "義大利麵 義式餐廳 披薩 Italian Restaurant Pizza Pasta", icon: "🍝" },
+            { name: "法式料理", query: "法式餐廳 French Restaurant Bistro", icon: "🍷" },
+            { name: "在地小吃", query: "小吃 麵店 Local Food Street Food Market", icon: "🍜" },
+            { name: "火鍋燒肉", query: "火鍋 燒肉 麻辣鍋 Hotpot BBQ Yakiniku", icon: "🔥" },
+            { name: "早午餐", query: "早午餐 輕食 三明治 Brunch Breakfast Sandwich", icon: "🍳" }
         ],
         'medical': [
-            { name: "大型醫院", query: "醫學中心 區域醫院 教學醫院", icon: "🏥" },
-            { name: "小兒科", query: "小兒科診所", icon: "👶" },
-            { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
-            { name: "一般診所", query: "診所 家醫科 內科 小兒科 耳鼻喉科", icon: "🩺" }, 
-            { name: "藥局", query: "藥局", icon: "💊" }
+            { name: "大型醫院", query: "醫學中心 區域醫院 Hospital General Hospital", icon: "🏥" },
+            { name: "藥局", query: "藥局 Pharmacy Drugstore Chemist", icon: "💊" }, 
+            { name: "小兒科", query: "小兒科診所 Pediatrician", icon: "👶" },
+            { name: "耳鼻喉科", query: "耳鼻喉科診所 ENT Clinic", icon: "👂" },
+            { name: "一般診所", query: "診所 內科 Clinic Doctor Medical Center", icon: "🩺" }
         ],
         'life': [
-            { name: "超商超市", query: "便利商店 超市 量販店", icon: "🏪" },
-            { name: "停車場", query: "停車場", icon: "🅿️" },
-            { name: "加油站", query: "加油站", icon: "⛽" },
-            { name: "廁所", query: "公廁", icon: "🚾" }
+            { name: "便利超商", query: "便利商店 Convenience Store Supermarket", icon: "🏪" },
+            { name: "廁所", query: "公廁 Public Toilet Restroom WC", icon: "🚾" }, 
+            { name: "停車場", query: "停車場 Parking Lot Car Park", icon: "🅿️" },
+            { name: "加油站", query: "加油站 Gas Station Petrol Station", icon: "⛽" }
         ]
     };
 
@@ -256,9 +281,31 @@
         });
     }
 
+    // New function to refresh search when radius changes
+    function refreshSearch() {
+        const select = document.getElementById('radiusSelect');
+        currentRadius = parseInt(select.value);
+        if(currentQuery && userLocation) {
+            const activeBtn = document.querySelector('.chip-btn.active');
+            if(activeBtn) {
+                // Keep the button active visual state
+                // Just re-trigger search
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<div class="empty-state"><p>REFRESHING RADIUS...</p></div>';
+                performSearch(userLocation, currentQuery, currentRadius);
+            }
+        }
+    }
+
     function startSearch(query, btnElement) {
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
+        
+        currentQuery = query; // Save for refresh
+        
+        // Get current radius
+        const select = document.getElementById('radiusSelect');
+        currentRadius = parseInt(select.value);
 
         const resultsDiv = document.getElementById('results');
         resultsDiv.innerHTML = '<div class="empty-state"><p>SCANNING AREA...</p></div>';
@@ -267,7 +314,7 @@
         allFetchedPlaces = []; 
 
         if (userLocation) {
-             performSearch(userLocation, query);
+             performSearch(userLocation, query, currentRadius);
         } else {
              initUserLocation(); 
         }
@@ -307,17 +354,17 @@
         return R * c; 
     }
 
-    async function performSearch(location, query) {
+    async function performSearch(location, query, radius) {
         const { Place } = await google.maps.importLibrary("places");
         const resultsDiv = document.getElementById('results');
 
         try {
+            // 🌍 Using dynamic radius
             const request = {
                 textQuery: query,
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours'],
-                locationBias: { center: location, radius: 2000 }, 
+                locationBias: { center: location, radius: radius }, 
                 maxResultCount: 20,
-                language: 'zh-TW',
             };
 
             const { places } = await Place.searchByText(request);
@@ -328,25 +375,26 @@
                     const name = (p.displayName || "").toLowerCase();
                     const types = p.types || [];
                     
-                    // 1. 動物/獸醫過濾：如果不包含「寵物」或「動物」，則過濾掉獸醫
-                    const isSearchingForPets = query.includes('寵物') || query.includes('動物');
+                    // 1. Vet/Animal Filter
+                    const isSearchingForPets = query.includes('寵物') || query.includes('Pet');
                     if (!isSearchingForPets) {
                         if (types.includes('veterinary_care') || types.includes('animal_hospital') || name.includes('動物醫院') || name.includes('獸醫')) {
                             return false;
                         }
                     }
 
-                    // 2. 大型醫院專用過濾：排除診所、醫美、復健科
-                    if (query.includes("醫學中心") || query.includes("區域醫院")) {
-                        if (name.includes("診所") || name.includes("醫美") || name.includes("皮膚科") || types.includes('dentist') || types.includes('physiotherapist')) {
-                            return false;
+                    // 2. Large Hospital Filter
+                    if (query.includes("醫學中心") || query.includes("Hospital")) {
+                        if ((name.includes("診所") || name.includes("Clinic")) && !name.includes("Hospital")) {
+                            return false; 
                         }
+                        if (types.includes('dentist') || types.includes('physiotherapist')) return false;
                     }
 
                     return true;
                 });
                 
-                // 計算距離
+                // Calculate Distances
                 let processedPlaces = filtered.map(place => {
                     if (place.location && userLocation) {
                         const dist = calculateDistance(
@@ -360,10 +408,12 @@
                     return place;
                 });
 
-                // 過濾超過30公里
-                allFetchedPlaces = processedPlaces.filter(p => p.distanceVal <= 30);
+                // Filter by the selected radius (convert meters to km)
+                const maxKm = radius / 1000;
+                // We add a small buffer (+20%) because API ranking is fuzzy
+                allFetchedPlaces = processedPlaces.filter(p => p.distanceVal <= (maxKm * 1.5));
 
-                // 排序 (由近到遠)
+                // Strict Sort by distance (Closest first)
                 allFetchedPlaces.sort((a, b) => a.distanceVal - b.distanceVal);
 
                 renderPlacesList(allFetchedPlaces);
@@ -388,13 +438,12 @@
         }
 
         if (displayList.length === 0) {
-            resultsDiv.innerHTML = '<div class="empty-state">範圍內找不到地點</div>';
+            resultsDiv.innerHTML = '<div class="empty-state">範圍內找不到地點 (試試增加距離?)</div>';
             return;
         }
 
         resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">FOUND: ${displayList.length} LOCATIONS</div>`;
 
-        // 建立 Bounds 物件來自動調整地圖視野
         const bounds = new google.maps.LatLngBounds();
         if(userLocation) bounds.extend(userLocation);
 
@@ -407,7 +456,6 @@
                     label: { text: (index+1).toString(), color: "white", fontSize: "12px" }
                 });
 
-                // 點擊 Marker 捲動到對應卡片
                 marker.addListener("click", () => {
                     const cards = document.querySelectorAll('.place-card');
                     if(cards[index]) {
@@ -425,10 +473,8 @@
             }
         });
 
-        // 自動縮放地圖以顯示所有結果
         if (map && displayList.length > 0) {
             map.fitBounds(bounds);
-            // 避免縮放過近
             const listener = google.maps.event.addListener(map, "idle", function() { 
                 if (map.getZoom() > 16) map.setZoom(16); 
                 google.maps.event.removeListener(listener); 
@@ -439,14 +485,14 @@
     function createPlaceCard(place, index) {
         const resultsDiv = document.getElementById('results');
         
-        const name = place.displayName || "未知地點";
+        const name = place.displayName || "Unknown Place";
         const rating = place.rating ? place.rating.toFixed(1) : "N/A";
-        const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
+        const address = place.formattedAddress || "Address not provided";
         
         const isOpen = place.businessStatus === 'OPERATIONAL';
         const statusHtml = isOpen 
-            ? `<span class="dot-open"></span> 營業中` 
-            : `<span class="dot-close"></span> 休息中`;
+            ? `<span class="dot-open"></span> Open` 
+            : `<span class="dot-close"></span> Closed`;
 
         let hoursText = "";
         if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
@@ -465,11 +511,11 @@
 
         const isLowRating = place.rating && place.rating < 4.0;
         let ratingBadgeClass = isLowRating ? 'rating-badge low' : 'rating-badge';
-        let ratingLabel = isLowRating ? '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>' : '';
+        let ratingLabel = isLowRating ? '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ Low Rating</span>' : '';
 
         let extraTag = "";
-        if (place.types && place.types.includes('hospital') && !name.includes('診所')) {
-             extraTag = `<span style="font-size:12px; color:#A78BFA; background:rgba(139,92,246,0.15); padding:2px 6px; border-radius:4px; margin-right:6px;">🏥 醫療機構</span>`;
+        if (place.types && place.types.includes('hospital') && !name.includes('診所') && !name.includes('Clinic')) {
+             extraTag = `<span style="font-size:12px; color:#A78BFA; background:rgba(139,92,246,0.15); padding:2px 6px; border-radius:4px; margin-right:6px;">🏥 Hospital</span>`;
         }
 
         let reviewHtml = '';
@@ -484,7 +530,7 @@
             
             if(text.trim().length > 0) {
                 const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
-                const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
+                const reviewTitle = isLowRating ? '⚠️ Critical Review' : '💬 Review';
                 reviewHtml = `<div class="${reviewBoxClass}"><div class="review-label">${reviewTitle}</div><div class="review-text">"${text}"</div></div>`;
             }
         }
@@ -493,7 +539,6 @@
         card.className = 'place-card';
         card.style.animationDelay = `${index * 0.05}s`;
         
-        // 修正了 openGoogleMaps 的連結
         card.innerHTML = `
             <div class="card-top">
                 <div class="place-name">${index+1}. ${name}</div>
@@ -506,15 +551,13 @@
             ${hoursText ? `<span class="hours-text">${hoursText}</span>` : ''}
             ${reviewHtml}
 
-            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name}')">NAVIGATE ➔</button>
+            <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name.replace(/'/g, "\\'")}')">NAVIGATE ➔</button>
         `;
 
         resultsDiv.appendChild(card);
     }
 
     function openGoogleMaps(placeId, name) {
-        // 使用 Google Maps 官方導航 URL Scheme
-        // destination_place_id 確保導航到正確的點
         const encodedName = encodeURIComponent(name);
         const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedName}&destination_place_id=${placeId}`;
         window.open(url, '_blank');
