@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS V2.4</title>
+    <title>Travel OS V2.5</title>
     <style>
         :root {
             --bg-color: #0B1120;        
@@ -144,7 +144,7 @@
     <header>
         <div class="brand">
             Travel OS
-            <span>GLOBAL EDITION V2.4</span>
+            <span>GLOBAL EDITION V2.5</span>
         </div>
         <div class="status-dot"></div>
     </header>
@@ -207,9 +207,12 @@
             // 🐶 親子寵物 (最左邊)
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
             
-            { name: "日式料理", query: "日式料理 烏龍麵 拉麵 壽司 迴轉壽司 藏壽司 壽司郎 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
+            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
-            { name: "手搖飲料", query: "飲料店 手搖杯 Bubble Tea Drinks Juice Bar", icon: "🥤" },
+            
+            // 🥤 [修正] 手搖飲 - 加入大量台灣品牌關鍵字，移除 "Drinks" 以避免搜到餐酒館
+            { name: "手搖飲料", query: "手搖飲料 珍珠奶茶 50嵐 清心福全 麻古茶坊 可不可熟成紅茶 龜記 萬波 鶴茶樓 八曜和茶 大茗 一沐日 五桐號 迷客夏 Bubble Tea", icon: "🥤" },
+            
             { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
             { name: "義式料理", query: "義大利麵 義式餐廳 披薩 Italian Restaurant Pizza Pasta", icon: "🍝" },
@@ -560,4 +563,3 @@
 
 </body>
 </html>
-
