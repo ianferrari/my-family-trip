@@ -3,96 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS Pro Debug</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="referrer" content="no-referrer">
     
-    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
-    <script>
-        var vConsole = new VConsole();
-        console.log("Debug Mode Started");
-    </script>
-
+    <title>Travel OS Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    
     <style>
+        /* 🎨 視覺設定 */
         :root {
             --bg-color: #F2F2F7;
+            --bg-image: none;
+            --glass-panel: #FFFFFF;
+            --glass-border: rgba(0, 0, 0, 0.05);
             --text-primary: #1C1C1E;
-            --header-bg: rgba(255, 255, 255, 0.95);
+            --text-secondary: #8E8E93;
+            --neon-accent: #007AFF;
+            --neon-success: #34C759;
+            --neon-warn: #FF3B30;
+            --price-color: #FF9500;
+            --distance-color: #5856D6;
+            --card-radius: 22px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.06);
+            --chip-bg: #FFFFFF;
+            --header-bg: rgba(255, 255, 255, 0.85);
+            
+            /* 🔤 字體設定：優先使用圓體(手寫感)，英文用 Inter */
+            --main-font: 'Zen Maru Gothic', 'Inter', sans-serif;
         }
+
+        /* 🌑 深色模式 (自動) */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
+                --bg-image: radial-gradient(circle at 0% 0%, #1c1c1e 0%, #000000 100%);
+                --glass-panel: rgba(28, 28, 30, 0.85);
+                --glass-border: rgba(255, 255, 255, 0.12);
                 --text-primary: #FFFFFF;
-                --header-bg: rgba(28, 28, 30, 0.95);
+                --text-secondary: #9898A0;
+                --neon-accent: #0A84FF;
+                --neon-success: #30D158;
+                --neon-warn: #FF453A;
+                --price-color: #FFD60A;
+                --distance-color: #BF5AF2;
+                --shadow: 0 8px 24px rgba(0,0,0,0.4);
+                --chip-bg: rgba(44, 44, 46, 0.6);
+                --header-bg: rgba(28, 28, 30, 0.7);
             }
         }
-        body { font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; padding-bottom: 100px;}
-        header { position: sticky; top: 0; background: var(--header-bg); padding: 15px; border-bottom: 1px solid #ccc; z-index: 100; text-align: center; }
-        #status { text-align: center; padding: 10px; color: #888; }
-        #map { width: 100%; height: 40vh; background: #ddd; margin-bottom: 20px; }
-        .error-box { background: #FF3B30; color: white; padding: 15px; margin: 10px; border-radius: 10px; display: none; }
-        .tab-btn { padding: 10px 20px; font-size: 16px; margin: 5px; }
+
+        body { 
+            font-family: var(--main-font);
+            background-color: var(--bg-color); 
+            background-image: var(--bg-image);
+            background-attachment: fixed;
+            margin: 0; padding: 0; 
+            color: var(--text-primary); 
+            -webkit-tap-highlight-color: transparent; 
+            padding-bottom: 120px;
+            transition: background 0.3s ease;
+        }
+        
+        /* Header */
+        header { 
+            background: var(--header-bg); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            margin: 0; padding: 16px 20px; 
+            border-bottom: 0.5px solid var(--glass-border);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100;
+        }
+        header h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .weather-badge {
+            font-size: 14px; font-weight: 700; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 6px;
+            background: var(--chip-bg); padding: 6px 12px; border-radius: 100px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Tabs */
+        .main-tabs { 
+            display: flex; margin: 12px 16px; 
+            background: var(--chip-bg); 
+            padding: 4px; border-radius: 18px; 
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+        .tab-btn { 
+            flex: 1; border: none; background: transparent; color: var(--text-secondary); 
+            padding: 10px 0; border-radius: 14px; 
+            font-size: 16px; font-weight: 700; font-family: var(--main-font);
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { background: var(--glass-panel); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        
+        /* Chips */
+        .sub-nav-container { margin: 0; overflow: hidden; padding: 0 0 12px 0; }
+        .sub-scroll-wrapper { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 10px 16px; scrollbar-width: none; }
+        .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+        .chip-btn { 
+            border: 1px solid var(--glass-border); background: var(--chip-bg); color: var(--text-primary);
+            padding: 8px 18px; font-size: 15px; font-weight: 500; border-radius: 100px; font-family: var(--main-font);
+            white-space: nowrap; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(5px);
+        }
+        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; font-weight: 700; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+
+        /* Filter Toggle */
+        .filter-container { padding: 0 20px 8px 20px; display: flex; justify-content: flex-end; align-items: center; }
+        .filter-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .ios-toggle { appearance: none; width: 42px; height: 24px; background: rgba(120,120,128,0.2); border-radius: 20px; position: relative; cursor: pointer; outline: none; transition: 0.3s; }
+        .ios-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: 0.3s; }
+        .ios-toggle:checked { background: var(--neon-success); }
+        .ios-toggle:checked::after { transform: translateX(18px); }
+
+        /* Map */
+        .map-wrapper { padding: 0 16px; margin: 4px 0 20px 0; }
+        #map { width: 100%; height: 32vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); background-color: #e5e5e5; }
+        
+        /* Cards */
+        .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
+        .place-card { 
+            background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
+            padding: 22px; margin-bottom: 16px; box-shadow: var(--shadow); 
+            animation: fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            display: flex; flex-direction: column;
+        }
+
+        .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+        .place-name { font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.3; width: 70%; }
+        
+        .place-rating-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .rating-box { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 4px; font-family: 'Inter', sans-serif; }
+        .rating-high { background: rgba(52, 199, 89, 0.15); color: var(--neon-success); }
+        .rating-low { background: rgba(255, 59, 48, 0.15); color: var(--neon-warn); }
+        
+        .info-tags { display: flex; gap: 6px; font-size: 12px; font-weight: 700; margin-top: 2px; font-family: 'Inter', sans-serif; }
+        .price-tag { color: var(--price-color); }
+        .distance-tag { color: var(--distance-color); background: rgba(128,128,128,0.1); padding: 2px 8px; border-radius: 6px;}
+
+        .place-meta { font-size: 14px; color: var(--text-secondary); margin-bottom: 14px; display: flex; flex-direction: column; gap: 4px; line-height: 1.4; font-weight: 500; }
+        .meta-row { display: flex; align-items: center; gap: 6px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+        
+        .review-box { 
+            background: rgba(128,128,128,0.08); padding: 14px; border-radius: 16px; 
+            font-size: 14px; line-height: 1.5; color: var(--text-primary); margin-bottom: 14px;
+            border-left: 3px solid;
+        }
+        .review-box.good { border-color: var(--neon-success); }
+        .review-box.bad { border-color: var(--neon-warn); background: rgba(255, 59, 48, 0.05); }
+        
+        .review-title { font-weight: 700; margin-bottom: 2px; display: block; font-size: 12px; opacity: 0.8; }
+        .review-text { font-style: italic; opacity: 0.9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .action-btn {
+            display: block; width: 100%; text-align: center; 
+            background: rgba(128,128,128,0.08); border: 1px solid rgba(128,128,128,0.1);
+            color: var(--neon-accent); padding: 14px 0; border-radius: 16px;
+            font-size: 15px; font-weight: 700; text-decoration: none; transition: all 0.2s;
+        }
+        .action-btn:active { background: rgba(128,128,128,0.15); transform: scale(0.98); }
+
+        #status { text-align: center; margin: 10px 0; font-size: 12px; color: var(--text-secondary); letter-spacing: 0.5px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Travel OS (除錯版)</h1>
+    <h1>Travel OS</h1>
+    <div class="weather-badge" id="weather-badge">
+        📡 ...
+    </div>
 </header>
 
-<div id="error-msg" class="error-box"></div>
-
-<div id="status">正在嘗試連線 Google Maps...</div>
-<div id="map"></div>
-
-<div style="text-align: center;">
-    <button class="tab-btn" onclick="checkAPI()">按我檢查 API 狀態</button>
+<div class="main-tabs">
+    <button class="tab-btn active" onclick="selectCategory('fun')">玩樂</button>
+    <button class="tab-btn" onclick="selectCategory('food')">美食</button>
+    <button class="tab-btn" onclick="selectCategory('medical')">健康</button>
+    <button class="tab-btn" onclick="selectCategory('life')">便利</button>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyaGpwDguvqVwYGPN1CsVbuddU18dtHEs&loading=async&libraries=places,maps&callback=initMap" onerror="handleApiError()"></script>
+<div class="sub-nav-container">
+    <div class="sub-scroll-wrapper" id="sub-nav"></div>
+</div>
+
+<div class="filter-container">
+    <label class="filter-label">
+        只顯示營業中
+        <input type="checkbox" class="ios-toggle" id="openFilter" onchange="toggleFilter()">
+    </label>
+</div>
+
+<div id="status">地圖載入中...</div>
+
+<div class="map-wrapper">
+    <div id="map"></div>
+</div>
+
+<div class="results-container" id="results">
+    <div style="text-align: center; margin-top: 60px; opacity: 0.5;">
+        <h3 style="font-weight:700; font-size:20px;">準備探索</h3>
+        <p style="font-size:14px;">請點選上方類別開始</p>
+    </div>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyaGpwDguvqVwYGPN1CsVbuddU18dtHEs&loading=async&libraries=places,maps"></script>
 
 <script>
     let map;
+    let userLocation = null;
+    let currentMarkers = [];
+    let lastFetchedPlaces = []; 
+    
+    // 自動深色模式
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkMapStyle = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+    ];
 
-    // 捕捉 API 載入失敗
-    function handleApiError() {
-        const msg = "❌ Google Maps 無法載入！請檢查您的網路或 API Key 是否正確。";
-        console.error(msg);
-        showError(msg);
-    }
+    const CATEGORIES = {
+        'fun': [
+            { name: "附近公園", query: "公園", icon: "🛝" },
+            { name: "觀光景點", query: "觀光景點 打卡景點", icon: "📸" },
+            { name: "百貨購物", query: "百貨公司 購物中心 商場", icon: "🛍️" },
+            { name: "室內遊樂", query: "室內遊樂園 親子館 遊戲場", icon: "🧩" },
+            { name: "書店圖館", query: "書店 圖書館", icon: "📚" }
+        ],
+        'food': [
+            { name: "手搖飲料", query: "手搖飲 飲料店 50嵐 可不可", icon: "🧋" },
+            { name: "寵物友善", query: "寵物友善餐廳 寵物餐廳 貓咪餐廳", icon: "🐾" },
+            { name: "親子餐廳", query: "親子餐廳 親子友善", icon: "👶" },
+            { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "🍰" },
+            { name: "在地小吃", query: "小吃 麵店 便當", icon: "🍜" },
+            { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" }
+        ],
+        'medical': [
+            { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" },
+            { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
+            { name: "小兒科", query: "小兒科", icon: "👶" },
+            { name: "急診醫院", query: "醫院 急診", icon: "🏥" },
+            { name: "藥局", query: "藥局", icon: "💊" },
+            { name: "寵物醫院", query: "動物醫院 獸醫 24小時動物醫院", icon: "🐶" }
+        ],
+        'life': [
+            { name: "動物水族", query: "寵物店 水族館 魚中魚", icon: "🐠" },
+            { name: "便利超商", query: "便利商店 7-11 全家", icon: "🏪" },
+            { name: "停車場", query: "停車場", icon: "🅿️" },
+            { name: "加油站", query: "加油站", icon: "⛽" }
+        ]
+    };
 
-    function showError(text) {
-        const box = document.getElementById('error-msg');
-        box.style.display = 'block';
-        box.innerHTML += `<p>${text}</p>`;
-        document.getElementById('status').innerText = "發生錯誤";
-    }
+    window.onload = async () => { 
+        renderSubNav('fun'); 
+        await initMap(25.0478, 121.5170); // 預設台北
 
-    // 地圖初始化
-    async function initMap() {
-        console.log("initMap triggered");
-        document.getElementById('status').innerText = "API 載入成功，正在繪製地圖...";
-        
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    map.setCenter(userLocation);
+                    new google.maps.Marker({
+                        position: userLocation, map: map,
+                        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#007AFF", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
+                    });
+                    fetchWeather(userLocation.lat, userLocation.lng);
+                    document.getElementById('status').innerText = "定位成功";
+                },
+                (err) => { document.getElementById('status').innerText = "⚠️ 定位失敗，請開啟GPS"; }
+            );
+        }
+    };
+
+    darkModeQuery.addListener((e) => {
+        if(map) map.setOptions({ styles: e.matches ? darkMapStyle : [] });
+    });
+
+    async function fetchWeather(lat, lng) {
         try {
-            const { Map } = await google.maps.importLibrary("maps");
-            map = new Map(document.getElementById("map"), {
-                center: { lat: 25.0478, lng: 121.5170 }, // 台北車站
-                zoom: 15,
-                mapId: "DEMO_MAP_ID"
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+            const data = await res.json();
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            let icon = "☁️";
+            if(code <= 1) icon = "☀️"; else if(code <= 3) icon = "⛅"; else if(code <= 60) icon = "🌧️"; else icon = "⛈️";
+            document.getElementById('weather-badge').innerHTML = `${icon} ${temp}°C`;
+        } catch(e) {}
+    }
+
+    function selectCategory(cat) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        renderSubNav(cat);
+    }
+
+    function renderSubNav(cat) {
+        const container = document.getElementById('sub-nav');
+        container.innerHTML = '';
+        CATEGORIES[cat].forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = 'chip-btn';
+            btn.innerHTML = `${opt.icon} ${opt.name}`;
+            btn.onclick = () => startSearch(opt.query, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function toggleFilter() {
+        if (lastFetchedPlaces.length > 0) displayResults(lastFetchedPlaces); 
+    }
+
+    function startSearch(query, btnElement) {
+        document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        
+        const center = userLocation || map.getCenter();
+        const searchLoc = { lat: typeof center.lat === 'function' ? center.lat() : center.lat, lng: typeof center.lng === 'function' ? center.lng() : center.lng };
+        performSearch(searchLoc, query);
+    }
+
+    async function initMap(lat, lng) {
+        const { Map } = await google.maps.importLibrary("maps");
+        const isDark = darkModeQuery.matches;
+        map = new Map(document.getElementById("map"), {
+            center: { lat, lng }, zoom: 15, mapId: "DEMO_MAP_ID", 
+            disableDefaultUI: true, gestureHandling: "greedy",
+            styles: isDark ? darkMapStyle : [] 
+        });
+    }
+
+    async function performSearch(location, query) {
+        document.getElementById('status').innerText = `搜尋：${query}...`;
+        currentMarkers.forEach(m => m.setMap(null)); currentMarkers = [];
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>資料讀取中...</p></div>';
+
+        const { Place } = await google.maps.importLibrary("places");
+        const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
+
+        try {
+            const { places } = await Place.searchByText({
+                textQuery: query,
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel', 'currentOpeningHours'],
+                maxResultCount: 20, language: 'zh-TW',
+                locationBias: { center: location }, 
+                rankPreference: SearchByTextRankPreference.DISTANCE, 
+                isOpenNow: false
             });
-            document.getElementById('status').innerText = "地圖繪製完成！(請按綠色按鈕檢查詳細錯誤)";
-            console.log("Map rendered successfully");
+            
+            if (places && places.length > 0) {
+                lastFetchedPlaces = places;
+                displayResults(places);
+                document.getElementById('status').innerText = "搜尋完成";
+            } else {
+                document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>附近沒有結果</p></div>';
+            }
         } catch (e) {
-            console.error(e);
-            showError("地圖繪製失敗：" + e.message);
+            document.getElementById('results').innerHTML = `<div style="text-align:center; padding:30px; color:var(--neon-warn);"><h3>API 連線失敗</h3></div>`;
         }
     }
 
-    function checkAPI() {
-        if (typeof google === 'undefined') {
-            showError("Google 物件不存在 (API Key 可能無效)");
-        } else {
-            alert("Google API 已載入！如果地圖還是灰的，請檢查 vConsole 的紅色錯誤。");
-        }
+    function displayResults(places) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = "";
+        const filterOpen = document.getElementById('openFilter').checked;
+        let visibleCount = 0;
+
+        places.forEach((place, index) => {
+            const isOpen = place.businessStatus === 'OPERATIONAL';
+            if (filterOpen && !isOpen) return;
+            visibleCount++;
+
+            const name = place.displayName || "Unknown";
+            const rating = place.rating || 0;
+            const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
+            let address = place.formattedAddress ? place.formattedAddress.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, '') : "";
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
+            
+            let distStr = "";
+            if (userLocation && place.location) {
+                const R = 6371; 
+                const dLat = (place.location.lat() - userLocation.lat) * Math.PI / 180;
+                const dLon = (place.location.lng() - userLocation.lng) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(userLocation.lat * Math.PI / 180) * Math.cos(place.location.lat() * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                const d = R * c;
+                distStr = d < 1 ? `${Math.round(d * 1000)}m` : `${d.toFixed(1)}km`;
+            }
+
+            let priceStr = "";
+            if (place.priceLevel) {
+                if(place.priceLevel.includes("INEXPENSIVE")) priceStr = "$";
+                else if(place.priceLevel.includes("MODERATE")) priceStr = "$$";
+                else if(place.priceLevel.includes("VERY")) priceStr = "$$$$";
+                else priceStr = "$$$";
+            }
+
+            let hoursStr = "";
+            if (place.currentOpeningHours && place.currentOpeningHours.weekdayDescriptions) {
+                const day = new Date().getDay(); 
+                const apiIdx = (day + 6) % 7;
+                if(place.currentOpeningHours.weekdayDescriptions[apiIdx]) {
+                    hoursStr = place.currentOpeningHours.weekdayDescriptions[apiIdx].split(": ")[1] || "";
+                }
+            }
+
+            const isLow = rating > 0 && rating < 4.0;
+            let reviewHtml = "";
+            if (place.reviews && place.reviews.length > 0) {
+                const txt = place.reviews[0].text;
+                const color = isLow ? "var(--neon-warn)" : "var(--neon-success)";
+                const title = isLow ? `⚠️ 評分偏低 (${rating})` : "💬 最新評價";
+                reviewHtml = `<div class="review-box ${isLow?'bad':'good'}"><span class="review-title" style="color:${color}">${title}</span><span class="review-text">"${txt}"</span></div>`;
+            } else if (isLow) {
+                reviewHtml = `<div class="review-box bad"><span class="review-title" style="color:var(--neon-warn)">⚠️ 評分低於 4.0</span></div>`;
+            }
+
+            const card = document.createElement('div');
+            card.className = 'place-card';
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.innerHTML = `
+                <div class="place-header">
+                    <div class="place-name">${name}</div>
+                    <div class="place-rating-badge">
+                        <div class="rating-box ${isLow?'rating-low':'rating-high'}">${rating > 0 ? '★ ' + rating : 'New'} <span style="font-weight:400; opacity:0.7; font-size:11px">${count}</span></div>
+                        <div class="info-tags"><span class="distance-tag">📍 ${distStr}</span><span class="price-tag">${priceStr}</span></div>
+                    </div>
+                </div>
+                <div class="place-meta">
+                    <div class="meta-row">${isOpen ? '<span class="status-dot" style="background:var(--neon-success)"></span><span style="color:var(--neon-success)">營業中</span>' : '<span class="status-dot" style="background:var(--neon-warn)"></span><span style="color:var(--neon-warn)">休息中</span>'} <span>🕒 ${hoursStr}</span></div>
+                    <div class="meta-row">• ${address}</div>
+                </div>
+                ${reviewHtml}
+                <a href="${mapUrl}" target="_blank" class="action-btn">NAVIGATE ➜</a>
+            `;
+            resultsDiv.appendChild(card);
+            
+            const marker = new google.maps.Marker({
+                position: place.location, map: map, title: name,
+                label: { text: (index + 1).toString(), color: "black", fontWeight: "bold" }
+            });
+            marker.addListener("click", () => card.scrollIntoView({ behavior: "smooth", block: "center" }));
+            currentMarkers.push(marker);
+        });
+
+        if (visibleCount === 0 && places.length > 0) resultsDiv.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>篩選後無結果</p></div>';
     }
 </script>
 </body>
