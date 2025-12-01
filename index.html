@@ -169,7 +169,6 @@
     let allFetchedPlaces = []; 
     let isOnlyOpen = false;    
 
-    // 🌟 設定檔修正：將「急診醫院」改為「綜合醫院」，並修改搜尋關鍵字
     const CATEGORIES = {
         'fun': [
             { name: "附近公園", query: "公園", icon: "🛝" },
@@ -181,13 +180,18 @@
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳", icon: "🐶" }, 
             { name: "手搖飲料", query: "飲料店", icon: "🥤" },
             { name: "咖啡甜點", query: "咖啡廳 甜點", icon: "☕" },
+            // ✨ 新增項目
+            { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館", icon: "🍺" },
+            { name: "義式料理", query: "義大利麵 義式餐廳", icon: "🍝" },
+            { name: "法式料理", query: "法式餐廳", icon: "🍷" },
+            { name: "日式料理", query: "日式料理 壽司", icon: "🍣" },
             { name: "在地小吃", query: "小吃 麵店", icon: "🍜" },
             { name: "火鍋燒肉", query: "火鍋 燒肉", icon: "🔥" },
             { name: "早午餐", query: "早午餐", icon: "🍳" }
         ],
         'medical': [
-            // 修正：名稱改為綜合醫院，關鍵字包含「醫學中心」，這樣榮總、林新才會出來
-            { name: "綜合醫院", query: "綜合醫院 醫學中心", icon: "🏥" },
+            // 🌟 修正：名稱改為「大型醫院」，並且查詢關鍵字改為「醫學中心」，程式碼下方還有過濾邏輯
+            { name: "大型醫院", query: "醫學中心 區域醫院 教學醫院", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
             { name: "一般診所", query: "診所 家醫科 內科 小兒科 耳鼻喉科", icon: "🩺" }, 
@@ -201,10 +205,9 @@
         ]
     };
 
-    // 🌟 修正：網頁載入時，直接啟動定位並顯示地圖
     window.onload = () => { 
         renderSubNav('fun'); 
-        initUserLocation(); // 立即抓位置
+        initUserLocation(); 
     };
 
     function initUserLocation() {
@@ -212,8 +215,6 @@
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    
-                    // 只要抓到位置，馬上秀地圖
                     document.getElementById('map-wrapper').classList.add('show');
                     document.getElementById('results').innerHTML = '<div class="empty-state"><p>Location Found!<br>Select a category to start.</p></div>';
                     await initMap(userLocation.lat, userLocation.lng);
@@ -263,11 +264,10 @@
         clearMarkers();
         allFetchedPlaces = []; 
 
-        // 如果已經有位置了，直接搜；沒有的話再抓一次
         if (userLocation) {
              performSearch(userLocation, query);
         } else {
-             initUserLocation(); // 嘗試重新定位
+             initUserLocation(); 
         }
     }
 
@@ -282,7 +282,6 @@
         } else {
             map.setCenter(center);
         }
-        // 藍色定位點
         new google.maps.Marker({
             position: center, map: map,
             icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: "#3B82F6", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
@@ -311,7 +310,7 @@
             const request = {
                 textQuery: query,
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours'],
-                locationBias: { center: location, radius: 2000 }, // 加強範圍權重
+                locationBias: { center: location, radius: 2000 }, 
                 maxResultCount: 20,
                 language: 'zh-TW',
             };
@@ -320,18 +319,29 @@
 
             if (places && places.length > 0) {
                 
-                // 1. 基本過濾 (動物醫院)
                 let filtered = places.filter(p => {
+                    const name = p.displayName || "";
+                    
+                    // 1. 動物/獸醫過濾
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
                     if (!isSearchingForPets) {
                         const isVetType = p.types && (p.types.includes('veterinary_care') || p.types.includes('animal_hospital'));
-                        const isVetName = p.displayName && (p.displayName.includes('動物醫院') || p.displayName.includes('獸醫'));
+                        const isVetName = name.includes('動物醫院') || name.includes('獸醫');
                         if (isVetType || isVetName) return false;
                     }
+
+                    // 2. 🌟 關鍵過濾：如果使用者搜尋的是「醫學中心/大醫院」，嚴格排除「診所/醫美/復健」
+                    // 這裡的邏輯是：如果搜尋字串裡包含 "醫學中心" (代表按下大型醫院按鈕)，就開啟黑名單過濾
+                    if (query.includes("醫學中心") || query.includes("區域醫院")) {
+                        if (name.includes("診所") || name.includes("醫美") || name.includes("皮膚科") || name.includes("復健科")) {
+                            return false;
+                        }
+                    }
+
                     return true;
                 });
                 
-                // 2. 計算距離
+                // 計算距離
                 let processedPlaces = filtered.map(place => {
                     if (place.location && userLocation) {
                         const dist = calculateDistance(
@@ -345,11 +355,10 @@
                     return place;
                 });
 
-                // 🌟 3. 關鍵修正：強力過濾掉距離太遠的結果 (例如台北的醫院)
-                // 設定閾值：30公里。超過30公里的一律不顯示。
+                // 過濾超過30公里
                 allFetchedPlaces = processedPlaces.filter(p => p.distanceVal <= 30);
 
-                // 4. 依照距離排序
+                // 排序
                 allFetchedPlaces.sort((a, b) => a.distanceVal - b.distanceVal);
 
                 renderPlacesList(allFetchedPlaces);
@@ -421,10 +430,9 @@
         let ratingBadgeClass = isLowRating ? 'rating-badge low' : 'rating-badge';
         let ratingLabel = isLowRating ? '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>' : '';
 
-        // 🌟 新增：針對綜合醫院的標籤
-        // 如果是醫院類別，顯示標籤 (不一定是急診，但代表是大醫院)
+        // 大型醫院標籤 (如果名字包含醫院或屬性是hospital，且不是診所)
         let extraTag = "";
-        if (place.types && place.types.includes('hospital')) {
+        if (place.types && place.types.includes('hospital') && !name.includes('診所')) {
              extraTag = `<span style="font-size:12px; color:#A78BFA; background:rgba(139,92,246,0.15); padding:2px 6px; border-radius:4px; margin-right:6px;">🏥 醫療機構</span>`;
         }
 
