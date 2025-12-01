@@ -4,19 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Travel OS Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap" rel="stylesheet">
     
     <style>
-        /* 🔤 設定字體優先順序 */
-        @font-face {
-            font-family: 'MyCustomFont';
-            /* 請確認 ttf 檔名正確並放在同一資料夾 */
-            src: url('UoqMunThenKhung-Regular.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-
         /* 🎨 核心樣式 */
         :root {
             --bg-color: #F2F2F7;
@@ -34,8 +25,10 @@
             --shadow: 0 4px 12px rgba(0,0,0,0.08);
             --chip-bg: #FFFFFF;
             --header-bg: rgba(255, 255, 255, 0.85);
-            /* 🔤 定義全域標題字型變數 */
-            --title-font: 'MyCustomFont', 'Zen Maru Gothic', sans-serif;
+            
+            /* 🔤 全域手寫字體設定 */
+            --hand-font: 'Yusei Magic', cursive;
+            --std-font: 'Inter', sans-serif;
         }
 
         /* 🌑 深色模式 (自動感應) */
@@ -59,7 +52,7 @@
         }
 
         body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
+            font-family: var(--std-font);
             background-color: var(--bg-color); 
             background-image: var(--bg-image);
             background-attachment: fixed;
@@ -82,10 +75,10 @@
             position: sticky; top: 16px; z-index: 100;
         }
         
-        /* 🔤 套用字體：App 標題 */
+        /* 🔤 套用手寫字體：App 標題 */
         header h1 { 
-            margin: 0; font-size: 24px; font-weight: normal; 
-            font-family: var(--title-font);
+            margin: 0; font-size: 26px; font-weight: normal; 
+            font-family: var(--hand-font);
             letter-spacing: 1px;
         }
         
@@ -105,12 +98,13 @@
             backdrop-filter: blur(10px);
         }
         
-        /* 🔤 套用字體：四大分類 */
+        /* 🔤 套用手寫字體：四大分類 */
         .tab-btn { 
             flex: 1; border: none; background: transparent; color: var(--text-secondary); 
             padding: 12px 0; border-radius: 26px; 
-            font-size: 16px; font-weight: normal; 
-            font-family: var(--title-font);
+            font-size: 18px; /* 加大一點 */
+            font-weight: normal; 
+            font-family: var(--hand-font);
             cursor: pointer; transition: all 0.3s;
         }
         .tab-btn.active { background: var(--glass-panel); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -120,16 +114,17 @@
         .sub-scroll-wrapper { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 10px 20px; scrollbar-width: none; }
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
 
-        /* 🔤 套用字體：第二排膠囊 */
+        /* 🔤 套用手寫字體：第二排膠囊 */
         .chip-btn { 
             border: 1px solid var(--glass-border); background: var(--chip-bg); color: var(--text-primary);
-            padding: 10px 20px; font-size: 15px; font-weight: normal; border-radius: 100px; 
-            font-family: var(--title-font);
+            padding: 10px 20px; border-radius: 100px; 
+            font-size: 16px; font-weight: normal;
+            font-family: var(--hand-font);
             white-space: nowrap; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(5px);
         }
-        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); font-weight: normal; }
+        .chip-btn.active { background: var(--neon-accent); border-color: var(--neon-accent); color: #fff; box-shadow: 0 0 15px rgba(10, 132, 255, 0.4); }
 
-        /* Filter Toggle (只顯示營業中) */
+        /* Filter Toggle */
         .filter-container {
             padding: 0 24px 12px 24px;
             display: flex; justify-content: flex-end; align-items: center;
@@ -153,13 +148,12 @@
         .map-wrapper { padding: 0 16px; margin: 10px 0 24px 0; }
         #map { width: 100%; height: 35vh; border-radius: var(--card-radius); box-shadow: var(--shadow); border: 1px solid var(--glass-border); transition: border-color 0.5s ease; }
         
-        /* Cards (移除圖片樣式，回復簡潔版) */
+        /* Cards */
         .results-container { padding: 0 16px; max-width: 600px; margin: 0 auto; }
         .place-card { 
             background: var(--glass-panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); border-radius: var(--card-radius); 
-            padding: 24px; /* 加回內距 */
-            margin-bottom: 24px; box-shadow: var(--shadow); 
+            padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow); 
             animation: fadeInUp 0.5s ease forwards;
             display: flex; flex-direction: column;
             transition: background 0.5s ease, border-color 0.5s ease;
@@ -167,11 +161,11 @@
 
         .place-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         
-        /* 🔤 套用字體：地點名稱 */
+        /* 🔤 套用手寫字體：地點名稱 */
         .place-name { 
-            font-size: 21px; font-weight: normal; 
+            font-size: 24px; font-weight: normal; 
+            font-family: var(--hand-font);
             color: var(--text-primary); line-height: 1.3; width: 70%; 
-            font-family: var(--title-font);
         }
         
         .place-rating-badge { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
@@ -238,7 +232,7 @@
     </label>
 </div>
 
-<div id="status">SYSTEM READY</div>
+<div id="status">地圖載入中...</div>
 
 <div class="map-wrapper">
     <div id="map"></div>
@@ -246,8 +240,8 @@
 
 <div class="results-container" id="results">
     <div style="text-align: center; margin-top: 60px; opacity: 0.5;">
-        <h3 style="font-weight:300; letter-spacing:1px; font-family: var(--title-font);">AWAITING INPUT</h3>
-        <p style="font-size:12px;">Select a category to scan nearby locations</p>
+        <h3 style="font-weight:normal; letter-spacing:1px; font-family: var(--hand-font); font-size:24px;">開始探索</h3>
+        <p style="font-size:12px;">請點選上方類別</p>
     </div>
 </div>
 
@@ -257,11 +251,18 @@
     let map;
     let userLocation = null;
     let currentMarkers = [];
-    let currentCircle = null;
     let lastFetchedPlaces = []; 
     
-    // 自動深色模式偵測
+    // 自動深色模式
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkMapStyle = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
+        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
+    ];
 
     const CATEGORIES = {
         'fun': [
@@ -296,21 +297,44 @@
     };
 
     let currentCategory = 'fun';
-    window.onload = () => { 
+
+    // 🚀 初始化：先載入地圖，再抓定位
+    window.onload = async () => { 
         renderSubNav('fun'); 
+        
+        // 1. 先畫地圖 (預設台北，避免空白)
+        await initMap(25.0478, 121.5170); // Taipei Station Default
+
+        // 2. 再嘗試定位用戶
         if(navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                fetchWeather(lat, lng);
-            });
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    userLocation = { lat, lng };
+                    
+                    // 定位成功，移動地圖
+                    map.setCenter(userLocation);
+                    
+                    // 畫一個藍色小點代表自己
+                    new google.maps.Marker({
+                        position: userLocation, map: map,
+                        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#007AFF", fillOpacity: 1, strokeWeight: 2, strokeColor: "white" }
+                    });
+
+                    fetchWeather(lat, lng);
+                    document.getElementById('status').innerText = "定位成功";
+                },
+                (err) => {
+                    document.getElementById('status').innerText = "⚠️ 無法定位，請手動滑動地圖";
+                    console.error("GPS Error:", err);
+                }
+            );
         }
     };
 
     darkModeQuery.addListener((e) => {
-        if(map) {
-            map.setOptions({ styles: e.matches ? darkMapStyle : [] });
-        }
+        if(map) map.setOptions({ styles: e.matches ? darkMapStyle : [] });
     });
 
     async function fetchWeather(lat, lng) {
@@ -324,21 +348,9 @@
             else if(code <= 3) icon = "⛅";
             else if(code <= 60) icon = "🌧️";
             else icon = "⛈️";
-
             document.getElementById('weather-badge').innerHTML = `${icon} ${temp}°C`;
-        } catch(e) {
-            document.getElementById('weather-badge').innerHTML = "N/A";
-        }
+        } catch(e) {}
     }
-
-    const darkMapStyle = [
-        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-        { featureType: "road", elementType: "geometry", stylers: [{ color: "#38414e" }] },
-        { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#212a37" }] },
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#17263c" }] }
-    ];
 
     function selectCategory(cat) {
         currentCategory = cat;
@@ -361,37 +373,17 @@
     }
 
     function toggleFilter() {
-        if (lastFetchedPlaces.length > 0) {
-            displayResults(lastFetchedPlaces); 
-        }
+        if (lastFetchedPlaces.length > 0) displayResults(lastFetchedPlaces); 
     }
 
     function startSearch(query, btnElement) {
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
         
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = "📡 搜尋最近地點中...";
-        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-secondary);"><p>正在計算距離與營業時間...</p></div>';
-        clearMarkers();
+        const center = userLocation || map.getCenter(); // 如果沒定位，就用目前地圖中心
+        const searchLoc = { lat: typeof center.lat === 'function' ? center.lat() : center.lat, lng: typeof center.lng === 'function' ? center.lng() : center.lng };
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
-                    fetchWeather(userLocation.lat, userLocation.lng);
-                    
-                    statusDiv.innerHTML = `TARGET: ${query}`;
-                    await initMap(userLocation.lat, userLocation.lng);
-                    await performSearch(userLocation, query);
-                    statusDiv.innerHTML = "SCAN COMPLETE";
-                },
-                (error) => {
-                    statusDiv.innerHTML = "GPS ERROR";
-                    document.getElementById('results').innerHTML = '<div style="text-align:center; color:var(--neon-warn);"><h3>無法定位</h3><p>請允許瀏覽器使用位置權限。</p></div>';
-                }
-            );
-        } else { statusDiv.innerHTML = "SYSTEM ERROR"; }
+        performSearch(searchLoc, query);
     }
 
     async function initMap(lat, lng) {
@@ -405,17 +397,7 @@
                 disableDefaultUI: true, gestureHandling: "greedy",
                 styles: isDark ? darkMapStyle : [] 
             });
-        } else {
-            map.setCenter(center); map.setZoom(15);
-            map.setOptions({ styles: isDark ? darkMapStyle : [] });
         }
-
-        if (currentCircle) currentCircle.setMap(null);
-        currentCircle = new google.maps.Marker({
-            position: center, map: map,
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#0A84FF", fillOpacity: 1, strokeWeight: 4, strokeColor: "rgba(10, 132, 255, 0.3)" },
-            zIndex: 999 
-        });
     }
 
     function clearMarkers() {
@@ -437,13 +419,16 @@
     }
 
     async function performSearch(location, query) {
+        document.getElementById('status').innerText = `正在搜尋：${query}...`;
+        clearMarkers();
+        document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>搜尋資料中...</p></div>';
+
         const { Place } = await google.maps.importLibrary("places");
         const { SearchByTextRankPreference } = await google.maps.importLibrary("places");
 
         try {
             let request = {
                 textQuery: query,
-                // 移除 'photos' 欄位，回復純文字
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'formattedAddress', 'id', 'userRatingCount', 'reviews', 'priceLevel', 'currentOpeningHours'],
                 maxResultCount: 20,
                 language: 'zh-TW',
@@ -457,12 +442,13 @@
             if (places && places.length > 0) {
                 lastFetchedPlaces = places;
                 displayResults(places);
+                document.getElementById('status').innerText = "搜尋完成";
             } else {
                 document.getElementById('results').innerHTML = '<div style="text-align:center; padding:40px; opacity:0.6;"><p>附近沒有找到相關地點。</p></div>';
             }
         } catch (e) {
             console.error("Search failed:", e);
-            document.getElementById('results').innerHTML = `<div style="text-align:center; padding:30px; color:var(--neon-warn);"><h3>連線錯誤</h3></div>`;
+            document.getElementById('results').innerHTML = `<div style="text-align:center; padding:30px; color:var(--neon-warn);"><h3>API 連線錯誤</h3><p>${e.message}</p></div>`;
         }
     }
 
@@ -485,14 +471,12 @@
             address = address.replace(/^[^市]+[市縣]/, '').replace(/^\d+/, ''); 
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
             
-            // 距離
             let distanceHtml = "";
             if (userLocation && place.location) {
                 const dist = calculateDistance(userLocation.lat, userLocation.lng, place.location.lat(), place.location.lng());
                 distanceHtml = `<span class="distance-tag">📍 ${formatDistance(dist)}</span>`;
             }
 
-            // 價位
             let priceStr = "";
             if (place.priceLevel) {
                 switch(place.priceLevel) {
@@ -503,7 +487,6 @@
                 }
             }
 
-            // 時間
             let hoursHtml = "";
             if (place.currentOpeningHours && place.currentOpeningHours.weekdayDescriptions) {
                 const dayIndex = new Date().getDay(); 
@@ -574,4 +557,3 @@
 </script>
 </body>
 </html>
-
