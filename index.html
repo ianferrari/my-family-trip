@@ -37,7 +37,6 @@
         .brand span { font-size: 10px; display: block; color: var(--text-sub); font-weight: 400; margin-top: 2px; }
         .status-dot { width: 8px; height: 8px; background-color: var(--accent-green); border-radius: 50%; box-shadow: 0 0 10px var(--accent-green); }
 
-        /* 分類 Tab */
         .main-tabs { display: flex; padding: 15px 15px 5px; gap: 10px; overflow-x: auto; scrollbar-width: none; }
         .tab-btn { 
             flex: 1; border: 1px solid rgba(255,255,255,0.1); 
@@ -47,7 +46,6 @@
         }
         .tab-btn.active { background: var(--text-main); color: var(--bg-color); }
 
-        /* 第二層：細項與過濾器 */
         .sub-nav-container { padding: 10px 15px; }
         .sub-scroll-wrapper { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; margin-bottom: 10px; }
         .sub-scroll-wrapper::-webkit-scrollbar { display: none; }
@@ -60,7 +58,6 @@
         }
         .chip-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
 
-        /* 過濾開關區域 */
         .filter-bar { display: flex; justify-content: flex-end; padding: 0 5px; margin-bottom: 10px; }
         .toggle-btn {
             background: #1E293B; border: 1px solid #334155; color: var(--text-sub);
@@ -73,14 +70,12 @@
         .toggle-icon { width: 10px; height: 10px; border-radius: 50%; border: 1px solid currentColor; }
         .toggle-btn.active .toggle-icon { background: currentColor; }
 
-        /* 地圖區 */
         .map-container { padding: 0 15px; margin-bottom: 20px; opacity: 0; height: 0; transition: all 0.5s; overflow: hidden; }
         .map-container.show { opacity: 1; height: 30vh; }
         #map { width: 100%; height: 100%; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); filter: grayscale(20%) invert(0%); }
 
         .results-container { padding: 0 15px 80px 15px; max-width: 600px; margin: 0 auto; }
         
-        /* 卡片設計 */
         .place-card { 
             background: var(--card-bg); 
             border-radius: 24px; padding: 20px; margin-bottom: 16px; 
@@ -98,13 +93,15 @@
         }
         .rating-badge.low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
 
-        .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        /* ✨ 新增：距離顯示的樣式 */
+        .dist-badge { color: var(--accent-blue); background: rgba(59, 130, 246, 0.15); padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-right: 6px; }
+
         .hours-text { font-size: 12px; color: #64748B; margin-bottom: 15px; display: block; }
         
         .dot-open { width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; }
         .dot-close { width: 6px; height: 6px; background: #64748B; border-radius: 50%; }
 
-        /* 評論區塊 */
         .review-box {
             background: var(--review-bg); border-radius: 16px; padding: 12px 16px;
             position: relative; margin-bottom: 16px; border-left: 3px solid var(--accent-green);
@@ -147,7 +144,6 @@
 
 <div class="sub-nav-container">
     <div class="sub-scroll-wrapper" id="sub-nav"></div>
-    
     <div class="filter-bar">
         <button class="toggle-btn" id="openFilterBtn" onclick="toggleOpenFilter()">
             <span class="toggle-icon"></span> 只顯示營業中
@@ -165,7 +161,7 @@
     </div>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyaGpwDguvqVwYGPN1CsVbuddU18dtHEs&loading=async&libraries=places,maps"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDyaGpwDguvqVwYGPN1CsVbuddU18dtHEs&loading=async&libraries=places,maps,geometry"></script>
 
 <script>
     let map;
@@ -193,7 +189,6 @@
             { name: "急診醫院", query: "醫學中心 綜合醫院 急診", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
-            // 🌟 修正點：一般診所現在會搜尋「家醫、內科、小兒科、耳鼻喉科」，確保所有基層診所都出現
             { name: "一般診所", query: "診所 家醫科 內科 小兒科 耳鼻喉科", icon: "🩺" }, 
             { name: "藥局", query: "藥局", icon: "💊" }
         ],
@@ -212,7 +207,6 @@
         const btn = document.getElementById('openFilterBtn');
         if(isOnlyOpen) btn.classList.add('active');
         else btn.classList.remove('active');
-        
         renderPlacesList(allFetchedPlaces);
     }
 
@@ -279,6 +273,18 @@
         currentMarkers = [];
     }
 
+    // 🌟 計算兩點距離的函式 (Haversine Formula)
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // 地球半徑 km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // 回傳公里
+    }
+
     async function performSearch(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         const resultsDiv = document.getElementById('results');
@@ -295,8 +301,8 @@
             const { places } = await Place.searchByText(request);
 
             if (places && places.length > 0) {
-                // 過濾動物醫院
-                allFetchedPlaces = places.filter(p => {
+                // 1. 過濾動物醫院
+                let filtered = places.filter(p => {
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
                     if (!isSearchingForPets) {
                         const isVetType = p.types && (p.types.includes('veterinary_care') || p.types.includes('animal_hospital'));
@@ -306,6 +312,24 @@
                     return true;
                 });
                 
+                // 2. 🌟 關鍵修改：計算距離並加入物件中
+                allFetchedPlaces = filtered.map(place => {
+                    if (place.location && userLocation) {
+                        // 計算距離 (單位 km)
+                        const dist = calculateDistance(
+                            userLocation.lat, userLocation.lng,
+                            place.location.lat(), place.location.lng()
+                        );
+                        place.distanceVal = dist; // 存起來方便排序
+                    } else {
+                        place.distanceVal = 9999; // 沒抓到距離就丟最後
+                    }
+                    return place;
+                });
+
+                // 3. 🌟 關鍵修改：依照距離排序 (由近到遠)
+                allFetchedPlaces.sort((a, b) => a.distanceVal - b.distanceVal);
+
                 renderPlacesList(allFetchedPlaces);
 
             } else {
@@ -338,7 +362,7 @@
             try {
                 createPlaceCard(place, index);
             } catch (err) {
-                console.warn("Skipping a bad place:", place.displayName, err);
+                console.warn("Skipping bad place:", err);
             }
         });
     }
@@ -351,53 +375,49 @@
         const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
         const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
         
+        // 營業狀態
         const isOpen = place.businessStatus === 'OPERATIONAL';
         const statusHtml = isOpen 
             ? `<span class="dot-open"></span> 營業中` 
             : `<span class="dot-close"></span> 休息中`;
 
+        // 營業時間文字
         let hoursText = "";
         if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
             const todayIndex = (new Date().getDay() + 6) % 7; 
             hoursText = place.regularOpeningHours.weekdayDescriptions[todayIndex] || "";
         }
 
-        const isLowRating = place.rating && place.rating < 4.0;
-        
-        let ratingBadgeClass = 'rating-badge';
-        let ratingLabel = '';
-        if (isLowRating) {
-            ratingBadgeClass += ' low';
-            ratingLabel = '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>';
+        // 🌟 距離顯示 (小於 1km 顯示公尺，大於 1km 顯示公里)
+        let distDisplay = "";
+        if (place.distanceVal) {
+            if (place.distanceVal < 1) {
+                distDisplay = `<span class="dist-badge">${Math.round(place.distanceVal * 1000)}m</span>`;
+            } else {
+                distDisplay = `<span class="dist-badge">${place.distanceVal.toFixed(1)}km</span>`;
+            }
         }
+
+        // 評分與評論
+        const isLowRating = place.rating && place.rating < 4.0;
+        let ratingBadgeClass = isLowRating ? 'rating-badge low' : 'rating-badge';
+        let ratingLabel = isLowRating ? '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>' : '';
 
         let reviewHtml = '';
         if (place.reviews && place.reviews.length > 0) {
             let targetReview = place.reviews[0];
-
             if (isLowRating) {
                 const badReview = place.reviews.find(r => r.rating <= 3);
                 if (badReview) targetReview = badReview;
             }
-
             const rawText = targetReview.text || ""; 
             const text = rawText.length > 65 ? rawText.substring(0, 65) + "..." : rawText;
-
-            const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
-            const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
-
+            
             if(text.trim().length > 0) {
-                reviewHtml = `
-                    <div class="${reviewBoxClass}">
-                        <div class="review-label">${reviewTitle}</div>
-                        <div class="review-text">"${text}"</div>
-                    </div>
-                `;
-            } else {
-                 reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 僅有評分，無文字評論</div></div>`;
+                const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
+                const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
+                reviewHtml = `<div class="${reviewBoxClass}"><div class="review-label">${reviewTitle}</div><div class="review-text">"${text}"</div></div>`;
             }
-        } else {
-            reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 暫無評價</div></div>`;
         }
 
         const card = document.createElement('div');
@@ -410,9 +430,10 @@
                 <div class="${ratingBadgeClass}">★ ${rating} ${ratingLabel}</div>
             </div>
             
-            <div class="status-row">${statusHtml} • ${address}</div>
+            <div class="status-row">
+                ${distDisplay} ${statusHtml} • ${address}
+            </div>
             ${hoursText ? `<span class="hours-text">${hoursText}</span>` : ''}
-
             ${reviewHtml}
 
             <button class="nav-btn" onclick="openGoogleMaps('${place.id}', '${name}')">NAVIGATE ➔</button>
@@ -420,6 +441,7 @@
 
         resultsDiv.appendChild(card);
 
+        // 地圖標記
         const marker = new google.maps.Marker({
             position: place.location, map: map,
             label: { text: (index+1).toString(), color: "white", fontSize: "12px" }
