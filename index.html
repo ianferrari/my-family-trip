@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS V2.5</title>
+    <title>Travel OS V2.6</title>
     <style>
         :root {
             --bg-color: #0B1120;        
@@ -144,7 +144,7 @@
     <header>
         <div class="brand">
             Travel OS
-            <span>GLOBAL EDITION V2.5</span>
+            <span>GLOBAL EDITION V2.6</span>
         </div>
         <div class="status-dot"></div>
     </header>
@@ -207,21 +207,23 @@
             // 🐶 親子寵物 (最左邊)
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
             
-            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
+            // 🍣 [修正] 日式料理 - 移除特定品牌，改用類別關鍵字，避免藏壽司霸榜
+            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 拉麵 烏龍麵 居酒屋 定食 Japanese Restaurant Sushi Ramen Udon Izakaya", icon: "🍣" }, 
+            
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
             
-            // 🥤 [修正] 手搖飲 - 加入大量台灣品牌關鍵字，移除 "Drinks" 以避免搜到餐酒館
-            { name: "手搖飲料", query: "手搖飲料 珍珠奶茶 50嵐 清心福全 麻古茶坊 可不可熟成紅茶 龜記 萬波 鶴茶樓 八曜和茶 大茗 一沐日 五桐號 迷客夏 Bubble Tea", icon: "🥤" },
+            // 🥤 [修正] 手搖飲 - 移除長串品牌與模糊字眼(Drinks)，確保搜尋結果多樣化
+            { name: "手搖飲料", query: "手搖飲料 飲料店 珍珠奶茶 鮮果茶 奶蓋茶 Bubble Tea Tea Shop", icon: "🥤" },
             
             { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
             { name: "義式料理", query: "義大利麵 義式餐廳 披薩 Italian Restaurant Pizza Pasta", icon: "🍝" },
             { name: "法式料理", query: "法式餐廳 French Restaurant Bistro", icon: "🍷" },
-            { name: "在地小吃", query: "小吃 麵店 Local Food Street Food Market", icon: "🍜" },
+            { name: "在地小吃", query: "小吃 牛肉麵 滷肉飯 炒飯 炒麵Local Food Street Food Market", icon: "🍜" },
             { name: "火鍋燒肉", query: "火鍋 燒肉 麻辣鍋 Hotpot BBQ Yakiniku", icon: "🔥" },
             { name: "早午餐", query: "早午餐 輕食 三明治 Brunch Breakfast Sandwich", icon: "🍳" },
 
-            // 🥬 傳統市場 (最右邊) - 已加入具體知名市場名稱
+            // 🥬 傳統市場 (最右邊)
             { name: "傳統市場", query: "傳統市場 觀光市場 黃昏市場 早市 菜市場 建國市場 第二市場 第三市場 第五市場 向上市場 東興市場 Market Morning Market Fish Market Farmers Market", icon: "🥬" }
         ],
         'medical': [
