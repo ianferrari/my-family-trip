@@ -11,7 +11,7 @@
             --text-main: #F8FAFC;      
             --text-sub: #94A3B8;       
             --accent-green: #10B981;   
-            --accent-red: #EF4444;     /* 新增：紅色警示 */
+            --accent-red: #EF4444;
             --accent-blue: #3B82F6;    
             --review-bg: #0F172A;      
             --nav-btn-bg: #334155;     
@@ -60,7 +60,7 @@
         }
         .chip-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
 
-        /* ✨ 新增：過濾開關區域 */
+        /* 過濾開關區域 */
         .filter-bar { display: flex; justify-content: flex-end; padding: 0 5px; margin-bottom: 10px; }
         .toggle-btn {
             background: #1E293B; border: 1px solid #334155; color: var(--text-sub);
@@ -96,7 +96,6 @@
             padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; 
             display: flex; align-items: center; gap: 4px; flex-shrink: 0;
         }
-        /* 低分樣式 */
         .rating-badge.low { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
 
         .status-row { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
@@ -110,7 +109,7 @@
             background: var(--review-bg); border-radius: 16px; padding: 12px 16px;
             position: relative; margin-bottom: 16px; border-left: 3px solid var(--accent-green);
         }
-        .review-box.low { border-left-color: var(--accent-red); } /* 低分紅線 */
+        .review-box.low { border-left-color: var(--accent-red); } 
         
         .review-label { font-size: 11px; color: var(--accent-green); font-weight: 700; margin-bottom: 4px; }
         .review-box.low .review-label { color: var(--accent-red); }
@@ -172,8 +171,8 @@
     let map;
     let userLocation = null;
     let currentMarkers = [];
-    let allFetchedPlaces = []; // 暫存所有抓到的地點，方便快速過濾
-    let isOnlyOpen = false;    // 過濾狀態
+    let allFetchedPlaces = []; 
+    let isOnlyOpen = false;    
 
     const CATEGORIES = {
         'fun': [
@@ -207,14 +206,12 @@
 
     window.onload = () => { renderSubNav('fun'); };
 
-    // 切換過濾模式 (一鍵顯示營業中)
     function toggleOpenFilter() {
         isOnlyOpen = !isOnlyOpen;
         const btn = document.getElementById('openFilterBtn');
         if(isOnlyOpen) btn.classList.add('active');
         else btn.classList.remove('active');
         
-        // 重新渲染，不需要重新 Call API
         renderPlacesList(allFetchedPlaces);
     }
 
@@ -244,7 +241,7 @@
         resultsDiv.innerHTML = '<div class="empty-state"><p>SCANNING AREA...</p></div>';
         
         clearMarkers();
-        allFetchedPlaces = []; // 清空暫存
+        allFetchedPlaces = []; 
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -288,7 +285,6 @@
         try {
             const request = {
                 textQuery: query,
-                // 🌟 新增 regularOpeningHours 以取得詳細營業時間
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours'],
                 locationBias: { center: location, radius: 1000 },
                 maxResultCount: 20,
@@ -298,7 +294,7 @@
             const { places } = await Place.searchByText(request);
 
             if (places && places.length > 0) {
-                // 過濾動物醫院
+                // 過濾邏輯
                 allFetchedPlaces = places.filter(p => {
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
                     if (!isSearchingForPets) {
@@ -309,7 +305,6 @@
                     return true;
                 });
                 
-                // 執行渲染
                 renderPlacesList(allFetchedPlaces);
 
             } else {
@@ -321,13 +316,11 @@
         }
     }
 
-    // 負責渲染畫面的函式 (含過濾邏輯)
     function renderPlacesList(places) {
         const resultsDiv = document.getElementById('results');
         clearMarkers();
         resultsDiv.innerHTML = "";
 
-        // 判斷是否只顯示營業中
         let displayList = places;
         if (isOnlyOpen) {
             displayList = places.filter(p => p.businessStatus === 'OPERATIONAL');
@@ -341,7 +334,12 @@
         resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">FOUND: ${displayList.length} LOCATIONS</div>`;
 
         displayList.forEach((place, index) => {
-            createPlaceCard(place, index);
+            // 🌟 這裡加了 try-catch，確保單一地點資料錯誤不會害整個列表死掉
+            try {
+                createPlaceCard(place, index);
+            } catch (err) {
+                console.warn("Skipping a bad place:", place.displayName, err);
+            }
         });
     }
 
@@ -353,23 +351,20 @@
         const count = place.userRatingCount ? `(${place.userRatingCount})` : "";
         const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "地址未提供";
         
-        // 1. 營業狀態
         const isOpen = place.businessStatus === 'OPERATIONAL';
         const statusHtml = isOpen 
             ? `<span class="dot-open"></span> 營業中` 
             : `<span class="dot-close"></span> 休息中`;
 
-        // 2. 獲取當日營業時間字串
+        // 🌟 修正點 1：更安全的營業時間讀取
         let hoursText = "";
         if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
-            const todayIndex = (new Date().getDay() + 6) % 7; // 調整 Google 的星期順序
+            const todayIndex = (new Date().getDay() + 6) % 7; 
             hoursText = place.regularOpeningHours.weekdayDescriptions[todayIndex] || "";
         }
 
-        // 3. 評分與評論邏輯
         const isLowRating = place.rating && place.rating < 4.0;
         
-        // 評分標籤樣式
         let ratingBadgeClass = 'rating-badge';
         let ratingLabel = '';
         if (isLowRating) {
@@ -377,27 +372,33 @@
             ratingLabel = '<span style="font-size:10px; margin-left:4px; opacity:0.8">⚠️ 評分偏低</span>';
         }
 
-        // 評論挑選邏輯
         let reviewHtml = '';
         if (place.reviews && place.reviews.length > 0) {
             let targetReview = place.reviews[0];
 
-            // 如果低分，嘗試找一個負評來顯示 (rating <= 3)
             if (isLowRating) {
                 const badReview = place.reviews.find(r => r.rating <= 3);
                 if (badReview) targetReview = badReview;
             }
 
-            const text = targetReview.text.length > 65 ? targetReview.text.substring(0, 65) + "..." : targetReview.text;
+            // 🌟 修正點 2：非常關鍵！如果使用者只評分沒寫字，text 會是 undefined，這裡強制轉為空字串
+            const rawText = targetReview.text || ""; 
+            const text = rawText.length > 65 ? rawText.substring(0, 65) + "..." : rawText;
+
             const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
             const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
 
-            reviewHtml = `
-                <div class="${reviewBoxClass}">
-                    <div class="review-label">${reviewTitle}</div>
-                    <div class="review-text">"${text}"</div>
-                </div>
-            `;
+            // 只有當真的有文字時才顯示評論框，不然空空的很醜
+            if(text.trim().length > 0) {
+                reviewHtml = `
+                    <div class="${reviewBoxClass}">
+                        <div class="review-label">${reviewTitle}</div>
+                        <div class="review-text">"${text}"</div>
+                    </div>
+                `;
+            } else {
+                 reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 僅有評分，無文字評論</div></div>`;
+            }
         } else {
             reviewHtml = `<div class="review-box" style="opacity:0.5"><div class="review-label">💬 暫無評價</div></div>`;
         }
