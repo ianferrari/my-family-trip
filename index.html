@@ -193,7 +193,8 @@
             { name: "急診醫院", query: "醫學中心 綜合醫院 急診", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所", icon: "👂" },
-            { name: "一般診所", query: "診所 家醫科 內科", icon: "🩺" }, 
+            // 🌟 修正點：一般診所現在會搜尋「家醫、內科、小兒科、耳鼻喉科」，確保所有基層診所都出現
+            { name: "一般診所", query: "診所 家醫科 內科 小兒科 耳鼻喉科", icon: "🩺" }, 
             { name: "藥局", query: "藥局", icon: "💊" }
         ],
         'life': [
@@ -294,7 +295,7 @@
             const { places } = await Place.searchByText(request);
 
             if (places && places.length > 0) {
-                // 過濾邏輯
+                // 過濾動物醫院
                 allFetchedPlaces = places.filter(p => {
                     const isSearchingForPets = query.includes('寵物') || query.includes('動物');
                     if (!isSearchingForPets) {
@@ -334,7 +335,6 @@
         resultsDiv.innerHTML = `<div style="text-align:center; font-size:12px; color:#64748B; margin:10px 0;">FOUND: ${displayList.length} LOCATIONS</div>`;
 
         displayList.forEach((place, index) => {
-            // 🌟 這裡加了 try-catch，確保單一地點資料錯誤不會害整個列表死掉
             try {
                 createPlaceCard(place, index);
             } catch (err) {
@@ -356,7 +356,6 @@
             ? `<span class="dot-open"></span> 營業中` 
             : `<span class="dot-close"></span> 休息中`;
 
-        // 🌟 修正點 1：更安全的營業時間讀取
         let hoursText = "";
         if (place.regularOpeningHours && place.regularOpeningHours.weekdayDescriptions) {
             const todayIndex = (new Date().getDay() + 6) % 7; 
@@ -381,14 +380,12 @@
                 if (badReview) targetReview = badReview;
             }
 
-            // 🌟 修正點 2：非常關鍵！如果使用者只評分沒寫字，text 會是 undefined，這裡強制轉為空字串
             const rawText = targetReview.text || ""; 
             const text = rawText.length > 65 ? rawText.substring(0, 65) + "..." : rawText;
 
             const reviewBoxClass = isLowRating ? 'review-box low' : 'review-box';
             const reviewTitle = isLowRating ? '⚠️ 注意評論' : '💬 最新評價';
 
-            // 只有當真的有文字時才顯示評論框，不然空空的很醜
             if(text.trim().length > 0) {
                 reviewHtml = `
                     <div class="${reviewBoxClass}">
