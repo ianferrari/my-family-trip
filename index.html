@@ -196,6 +196,13 @@
     let currentQuery = ""; 
     let currentRadius = 3000; 
 
+    // 🔄 定義手搖飲的隨機關鍵字群組 (避免單一品牌霸榜)
+    const DRINK_KEYWORDS = [
+        "八曜和茶 鶴茶樓 大茗 一沐日 得正", 
+        "麻古茶坊 龜記 可不可熟成紅茶 五桐號 迷客夏", 
+        "50嵐 清心福全 萬波 珍煮丹 茶湯會 手搖飲料"
+    ];
+
     const CATEGORIES = {
         'fun': [
             { name: "公園綠地", query: "公園 Park", icon: "🛝" },
@@ -208,8 +215,8 @@
             { name: "日式料理", query: "日式料理 壽司 迴轉壽司 拉麵 烏龍麵 居酒屋 定食 Japanese Restaurant Sushi Ramen Udon Izakaya", icon: "🍣" }, 
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
             
-            // 🥤 [強力修正] 手搖飲 - 暴力列出新世代品牌，提高權重
-            { name: "手搖飲料", query: "八曜和茶 鶴茶樓 麻古茶坊 大茗 龜記 一沐日 五桐號 得正 50嵐 清心 手搖飲料 珍珠奶茶 Bubble Tea Tea Shop", icon: "🥤" },
+            // 🥤 手搖飲料 (改為動態生成，稍後在 startSearch 處理)
+            { name: "手搖飲料", query: "DYNAMIC_DRINKS", icon: "🥤" },
             
             { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
@@ -304,7 +311,17 @@
         document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
         btnElement.classList.add('active');
         
-        currentQuery = query; 
+        let finalQuery = query;
+
+        // 🔄 隨機輪詢邏輯：如果是手搖飲，隨機挑一組關鍵字
+        if (query === "DYNAMIC_DRINKS") {
+            const randomIndex = Math.floor(Math.random() * DRINK_KEYWORDS.length);
+            finalQuery = DRINK_KEYWORDS[randomIndex];
+            // 提示使用者 (Optional)
+            console.log("Searching for group:", finalQuery); 
+        }
+        
+        currentQuery = finalQuery;
         
         const select = document.getElementById('radiusSelect');
         currentRadius = parseInt(select.value);
@@ -316,7 +333,7 @@
         allFetchedPlaces = []; 
 
         if (userLocation) {
-             performSearch(userLocation, query, currentRadius);
+             performSearch(userLocation, finalQuery, currentRadius);
         } else {
              initUserLocation(); 
         }
@@ -363,7 +380,6 @@
         try {
             const request = {
                 textQuery: query,
-                // ✨ 新增 priceLevel 欄位
                 fields: ['displayName', 'location', 'businessStatus', 'rating', 'userRatingCount', 'formattedAddress', 'id', 'reviews', 'types', 'regularOpeningHours', 'priceLevel'],
                 locationBias: { center: location, radius: radius }, 
                 maxResultCount: 20,
@@ -489,11 +505,8 @@
             ? `<span class="dot-open"></span> Open` 
             : `<span class="dot-close"></span> Closed`;
 
-        // ✨ 價位顯示邏輯
         let priceHtml = "";
         if (place.priceLevel) {
-            const price = "💰".repeat(place.priceLevel.length || 1); // 簡單處理，如果回傳字串
-            // 修正：Google API v3 通常回傳 0-4 的數字，我們轉成 $ 符號
             const level = typeof place.priceLevel === 'number' ? place.priceLevel : 1;
             const dollars = "💰".repeat(level);
             priceHtml = `<span style="font-size:12px; margin-right:6px;">${dollars}</span>`;
@@ -562,24 +575,19 @@
         resultsDiv.appendChild(card);
     }
 
-    // ✨ 智慧導航功能
     function openGoogleMaps(placeId, name, distKm) {
         const encodedName = encodeURIComponent(name);
         
-        // 預設模式：開車
         let mode = 'driving';
-        // 如果距離小於 1 公里，自動切換為步行
         if (distKm && distKm < 1.0) {
             mode = 'walking';
         }
 
-        // 使用 Google Maps Universal Link，並帶入 travelmode
-        // 注意：iOS/Android App有時會忽略 mode 參數，但在網頁版有效
         const url = `https://www.google.com/maps/dir/?api=1&destination=${encodedName}&destination_place_id=${placeId}&travelmode=${mode}`;
-        
         window.open(url, '_blank');
     }
 </script>
 
 </body>
 </html>
+
