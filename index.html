@@ -113,7 +113,7 @@
     let userLocation = null;
     let currentMarkers = [];
 
-    // 🌟 設定檔：所有按鈕的邏輯都在這裡，想改就在這改
+    // 🌟 設定檔
     const CATEGORIES = {
         'fun': [
             { name: "公園/學校", query: "公園 國小遊樂場", icon: "🛝" },
@@ -199,9 +199,9 @@
                     
                     statusDiv.innerHTML = "搜尋完成";
                 },
-                (error) => { statusDiv.innerHTML = "❌ 定位失敗"; }
+                (error) => { statusDiv.innerHTML = "❌ 定位失敗：請確認已開啟 GPS 權限"; }
             );
-        } else { statusDiv.innerHTML = "❌ 不支援定位"; }
+        } else { statusDiv.innerHTML = "❌ 瀏覽器不支援定位"; }
     }
 
     // Google Maps 邏輯
@@ -228,15 +228,15 @@
         currentMarkers = [];
     }
 
-    // 統一搜尋函數 (使用 Text Search 最靈活)
+    // 統一搜尋函數
     async function performSearch(location, query) {
         const { Place } = await google.maps.importLibrary("places");
         try {
             const request = {
                 textQuery: query, 
-                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount'],
+                fields: ['displayName', 'location', 'businessStatus', 'rating', 'types', 'formattedAddress', 'userRatingCount', 'id'], // 加上 id 欄位
                 locationBias: { center: location, radius: 1000 },
-                maxResultCount: 20, // 增加結果數量
+                maxResultCount: 20, 
                 language: 'zh-TW',
             };
             
@@ -249,7 +249,7 @@
             }
         } catch (e) {
             console.error(e);
-            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋發生錯誤，請稍後再試</p></div>';
+            document.getElementById('results').innerHTML = '<div class="empty-state"><p>搜尋發生錯誤（請檢查 Console）</p></div>';
         }
     }
 
@@ -267,7 +267,7 @@
         }
 
         activePlaces.forEach((place, index) => {
-            const name = place.displayName;
+            const name = place.displayName || "未知地點";
             const rating = place.rating || "無評分";
             const address = place.formattedAddress ? place.formattedAddress.replace('台灣台中市', '').replace(/^[0-9]+/, '') : "";
             const isOpen = place.businessStatus === 'OPERATIONAL';
@@ -291,9 +291,12 @@
                 </div>
             `;
             
+            // 🌟 修正後的點擊事件：使用反引號 (backticks) 和正確的變數
             card.onclick = () => {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`, '_blank');
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${place.id}`;
+                window.open(mapUrl, '_blank');
             };
+
             resultsDiv.appendChild(card);
             
             const marker = new google.maps.Marker({
