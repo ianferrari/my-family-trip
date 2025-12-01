@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel OS V2.1</title>
+    <title>Travel OS V2.2</title>
     <style>
         :root {
             --bg-color: #0B1120;        
@@ -144,7 +144,7 @@
     <header>
         <div class="brand">
             Travel OS
-            <span>GLOBAL EDITION V2</span>
+            <span>GLOBAL EDITION V2.2</span>
         </div>
         <div class="status-dot"></div>
     </header>
@@ -190,12 +190,13 @@
     let map;
     let userLocation = null;
     let currentMarkers = [];
-    let allFetchedPlaces = [];  
-    let isOnlyOpen = false;     
+    let allFetchedPlaces = []; 
+    let isOnlyOpen = false;    
     let userMarker = null;
-    let currentQuery = "";  
-    let currentRadius = 3000;   
+    let currentQuery = ""; 
+    let currentRadius = 3000; 
 
+    // 🌟 修正後的 CATEGORIES
     const CATEGORIES = {
         'fun': [
             { name: "公園綠地", query: "公園 Park", icon: "🛝" },
@@ -204,12 +205,12 @@
             { name: "室內遊樂", query: "室內遊樂園 Indoor Playground Arcade", icon: "🧩" }
         ],
         'food': [
+            // 🥬 [新增] 傳統市場/早市/魚市場 (適合台灣與日本)
+            { name: "傳統市場", query: "傳統市場 觀光市場 黃昏市場 魚市場 早市 Market Morning Market Fish Market Farmers Market", icon: "🥬" },
+
+            { name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" }, 
             { name: "親子寵物", query: "親子餐廳 寵物友善餐廳 Pet Friendly Restaurant", icon: "🐶" }, 
-			{ name: "日式料理", query: "日式料理 壽司 迴轉壽司 藏壽司 壽司郎 烏龍麵 拉麵 Japanese Restaurant Sushi Ramen", icon: "🍣" },    
-            
-            // 🫖 品茶聊天
             { name: "品茶聊天", query: "茶館 泡沫紅茶 人文茶館 春水堂 耕讀園 Tea House", icon: "🫖" },
-            
             { name: "手搖飲料", query: "飲料店 手搖杯 Bubble Tea Drinks Juice Bar", icon: "🥤" },
             { name: "咖啡甜點", query: "咖啡廳 甜點 下午茶 Cafe Dessert Bakery", icon: "☕" },
             { name: "酒吧居酒屋", query: "酒吧 居酒屋 餐酒館 Bar Izakaya Pub", icon: "🍺" },
@@ -220,19 +221,17 @@
             { name: "早午餐", query: "早午餐 輕食 三明治 Brunch Breakfast Sandwich", icon: "🍳" }
         ],
         'medical': [
-            { name: "大型醫院", query: "24小時急診 大型醫院 醫學中心 區域醫院 Hospital General Hospital", icon: "🏥" },
+            // 🏥 [修正] 優先搜尋急診室
+            { name: "急診醫院", query: "醫院 急診室 24小時 Hospital Emergency Room 24H", icon: "🏥" },
             { name: "小兒科", query: "小兒科診所 Pediatrician", icon: "👶" },
             { name: "耳鼻喉科", query: "耳鼻喉科診所 ENT Clinic", icon: "👂" },
             { name: "一般診所", query: "診所 內科 Clinic Doctor Medical Center", icon: "🩺" },
-            // 修正：補上缺失的逗號
             { name: "藥局", query: "藥局 Pharmacy Drugstore Chemist", icon: "💊" }
         ],
         'life': [
-            { name: "便利超商", query: "便利商店 Convenience Store Supermarket", icon: "🏪" },
-            
-            // 🛒 超市量販
+            // 🏪 [修正] 加入 7-11, 全家, Lawson 關鍵字，確保最近的店家出現
+            { name: "便利超商", query: "便利商店 7-Eleven 全家 萊爾富 OK超商 Convenience Store 7-11 FamilyMart Lawson", icon: "🏪" },
             { name: "超市量販", query: "超市 量販店 全聯 家樂福 好市多 Supermarket Hypermarket Grocery Store Costco Carrefour", icon: "🛒" },
-            
             { name: "廁所", query: "公廁 Public Toilet Restroom WC", icon: "🚾" }, 
             { name: "停車場", query: "停車場 Parking Lot Car Park", icon: "🅿️" },
             { name: "加油站", query: "加油站 Gas Station Petrol Station", icon: "⛽" }
@@ -244,7 +243,6 @@
         initUserLocation(); 
     };
 
-    // ⭐️ 優化：已加入 8 秒超時設定，避免程式凍結
     function initUserLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -255,10 +253,9 @@
                     await initMap(userLocation.lat, userLocation.lng);
                 },
                 (error) => {
-                    // 如果失敗或超時，顯示錯誤訊息並解除介面凍結
                     document.getElementById('results').innerHTML = '<div class="empty-state">LOCATION ACCESS DENIED OR TIMEOUT</div>';
                 },
-                { timeout: 8000, maximumAge: 60000 } // 8 秒超時
+                { timeout: 8000, maximumAge: 60000 } 
             );
         } else {
             document.getElementById('results').innerHTML = '<div class="empty-state">Geolocation Not Supported</div>';
